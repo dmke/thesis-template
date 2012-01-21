@@ -1,0 +1,17 @@
+%% common macros
+\maybespaceafter{zB}{z.\,B.}
+\maybespaceafter{dh}{d.\,h.}
+\maybespaceafter{uU}{u.\,U.}
+\maybespaceafter{uA}{u.\,A.}
+\maybespaceafter{su}{s.\,u.}
+\maybespaceafter{idR}{i.\,d.\,R.}
+
+
+%% misc
+
+\def\monthyear{%
+  \ifcase\month\or Januar\or Februar\or März\or%
+    April\or Mai\or Juni\or Juli\or August\or%
+    September\or Oktober\or November\or%
+    Dezember\fi~\the\year\xspace%
+}

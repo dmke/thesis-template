@@ -1,6 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{uhbthesis}[2011/12/20 v1.0 UHB CS Thesis]
 
+
+
 % no options given
 \DeclareOption*{\PackageWarning{uhbthesis}{Unknown `\CurrentOption`}}
 \ProcessOptions\relax
@@ -16,7 +18,12 @@
 \RequirePackage{xltxtra}
 
 \RequirePackage[english,ngerman]{babel}
-\addto\captionsngerman{\def\contentsname{Inhalt}}
+\addto\captionsenglisch{
+\def\contentsname{Table of Content}
+}
+\addto\captionsngerman{
+\def\contentsname{Inhalt}
+}
 
 \RequirePackage[german=guillemets]{csquotes}
 \RequirePackage{amsmath}
