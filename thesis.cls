@@ -1,7 +1,11 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{thesis}[2011/12/20 v1.0 UHB CS Thesis]
 
-
+\def\englishthesis{english}
+\def\ngermanthesis{ngerman}
+\def\thesislang{}
+\DeclareOption{english}{\gdef\thesislang{\englishthesis}}
+\DeclareOption{ngerman}{\gdef\thesislang{\ngermanthesis}}
 
 % no options given
 \DeclareOption*{\PackageWarning{thesis}{Unknown `\CurrentOption`}}
@@ -17,7 +21,7 @@
 \RequirePackage{xunicode}
 \RequirePackage{xltxtra}
 
-\RequirePackage[english,ngerman]{babel}
+\RequirePackage[\thesislang]{babel}
 \addto\captionsenglisch{
 \def\contentsname{Table of Content}
 }

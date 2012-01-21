@@ -19,12 +19,8 @@
   \expandafter\def\csname #1\endcsname{#2\xspace}%
 }
 
-\addto\captionsngerman{
-  \input{abbreviations.de.tex}
-}
-\addto\captionenglisch{
-  \input{abbreviations.en.tex}
-}
+\ifx\thesislang\ngermanthesis\input{abbreviations.de.tex}\fi
+\ifx\thesislang\englishthesis\input{abbreviations.en.tex}\fi
 
 \newcommand*{\acr}[1]{\gls{acr:#1}}
 \newcommand*{\Acr}[1]{\Gls{acr:#1}}
