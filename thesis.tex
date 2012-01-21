@@ -1,4 +1,3 @@
-
 %!TEX TS-program = xelatex
 %!TEX encoding = UTF-8 Unicode
 \documentclass{thesis}
@@ -15,10 +14,6 @@
 
 \input{settings.tex}
 
-\author{Foo Bar}
-\title{How the Foo rocks the Bar}
-\subtitle{Diplomarbeit}
-
 \begin{document}
 
 % Titel
@@ -34,8 +29,8 @@
   \@title\par
   \ifthesis@hassubtitle\@subtitleshort\fi
 
-  Diplomarbeit, Fachbereich Mathematik und Informatik\par
-  Universität Bremen, \monthyear
+  \diplomaname, \@department\par
+  \@institute, \monthyear
 \makeatother
 
 \normalsize
