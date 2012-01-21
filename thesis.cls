@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{uhbthesis}[2011/12/20 v1.0 UHB CS Thesis]
+\ProvidesClass{thesis}[2011/12/20 v1.0 UHB CS Thesis]
 
 % no options given
-\DeclareOption*{\PackageWarning{uhbthesis}{Unknown `\CurrentOption`}}
+\DeclareOption*{\PackageWarning{thesis}{Unknown `\CurrentOption`}}
 \ProcessOptions\relax
 
 \LoadClass[10pt]{book}
@@ -563,9 +563,7 @@
       \@author \\[1em]
     \end{tabular}%
     \vfill%
-    \projectname\par%
     \strut\@date\par%
-    \includegraphics[width=56pt]{images/thesis-logos.pdf}\par%
   \end{center}
   \let\@authoremail\relax% is not needed anymore
   \def\and{, }
