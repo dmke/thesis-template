@@ -2,15 +2,6 @@
 %!TEX encoding = UTF-8 Unicode
 \documentclass{uhbthesis}
 
-\usepackage{tikz,url,pgfplots}
-\usetikzlibrary{arrows}
-\tikzset{
-  line a/.style={line width=.5pt},
-  line b/.style={line width=1pt},
-  line c/.style={line width=1.5pt}
-}
-
-\usepackage[toc,section,numberedsection=autolabel,nosuper,numberline,acronym,nosuper,notree]{glossaries}
 \setStyleFile{glossary}
 \makeglossaries
 
@@ -83,21 +74,10 @@ verwendet.
 \input{preface.tex}
 \mainmatter
 
-\input{1-introduction/index.tex}
-\input{2-motivation/index.tex}
-\input{3-related-work/index.tex}
-\input{4-objectives/index.tex}
-\input{5-methods/index.tex}
-\input{6-execution/index.tex}
-\input{7-conclusion/index.tex}
-\input{8-test-infrastructure/index.tex}
-\input{9-results/index.tex}
-\input{10-outlook/index.tex}
+
 
 
 \appendix
-\input{A-compositions/appendix.tex}
-\input{A-lists/appendix.tex}
-\input{A-lists/listings.tex}
+\input{appendices/appendix.tex}
 
 \end{document}

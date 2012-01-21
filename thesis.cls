@@ -60,38 +60,38 @@
 
 \RequirePackage{tikz}
 \usetikzlibrary{calc,shapes,shapes.symbols,shapes.geometric,positioning,fit,arrows}
-\tikzset{every node/.style={anchor=center,font=\footnotesize\sffamily\bfseries}}
+\tikzset{every node/.style={anchor=center,font=\footnotesize\sffamily}}
 
 % XeTeX font config
-\setromanfont[
-  Scale=0.98,
-  ExternalLocation=./fonts/,
-  BoldFont={MinionPro-Bold.otf},
-  ItalicFont={MinionPro-It.otf},
-  BoldItalicFont={MinionPro-BoldIt.otf},
-  Numbers=OldStyle,
-  Mapping=tex-text  
-]{MinionPro-Regular.otf}
-\def\textsuperscript#1{$^{\text{#1}}$}
+%\setromanfont[
+%  Scale=0.98,
+%  ExternalLocation=./fonts/,
+%  BoldFont={MinionPro-Bold.otf},
+%  ItalicFont={MinionPro-It.otf},
+%  BoldItalicFont={MinionPro-BoldIt.otf},
+%  Numbers=OldStyle,
+%  Mapping=tex-text  
+%]{MinionPro-Regular.otf}
+%\def\textsuperscript#1{$^{\text{#1}}$}
 
-\setsansfont[
-  Scale=1.04,
-  Mapping=tex-text,
-  ExternalLocation=./fonts/,
-  BoldFont={HelveticaNeue-Condensed.otf},
-  ItalicFont={HelveticaNeue-ThinItalic.otf},
-  BoldItalicFont={HelveticaNeue-CondensedObl.otf}
-]{HelveticaNeue-Thin.otf}
+%\setsansfont[
+%  Scale=1.04,
+%  Mapping=tex-text,
+%  ExternalLocation=./fonts/,
+%  BoldFont={HelveticaNeue-Condensed.otf},
+%  ItalicFont={HelveticaNeue-ThinItalic.otf},
+%  BoldItalicFont={HelveticaNeue-CondensedObl.otf}
+%]{HelveticaNeue-Thin.otf}
 
-\setmonofont[
-  Scale=0.72,
-  Mapping=tex-text,
-  ExternalLocation=./fonts/,
-  BoldFont={DejaVuSansMono-Bold.ttf},
-  ItalicFont={DejaVuSansMono-Oblique.ttf},
-  BoldItalicFont={DejaVuSansMono-BoldOblique.ttf},
-  HyphenChar={-}
-]{DejaVuSansMono.ttf}
+%\setmonofont[
+%  Scale=0.72,
+%  Mapping=tex-text,
+%  ExternalLocation=./fonts/,
+%  BoldFont={DejaVuSansMono-Bold.ttf},
+%  ItalicFont={DejaVuSansMono-Oblique.ttf},
+%  BoldItalicFont={DejaVuSansMono-BoldOblique.ttf},
+%  HyphenChar={-}
+%]{DejaVuSansMono.ttf}
 
 % renew title command, create subtitle and authoremail command
 \long\def\title{\@dblarg\thesis@title}
@@ -207,6 +207,9 @@
   \@input{\jobname.toc}
   \makeatother
 \egroup}
+
+
+\RequirePackage[toc,section,numberedsection=autolabel,nosuper,numberline,acronym,nosuper,notree]{glossaries}
 
 
 % redefining ToC, LoF, LoT appearance
