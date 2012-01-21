@@ -21,6 +21,7 @@
 \RequirePackage{xunicode}
 \RequirePackage{xltxtra}
 
+<<<<<<< HEAD
 \RequirePackage[\thesislang]{babel}
 \addto\captionsenglisch{
 \def\contentsname{Table of Content}
@@ -28,6 +29,10 @@
 \addto\captionsngerman{
 \def\contentsname{Inhalt}
 }
+=======
+\RequirePackage[english]{babel}
+
+>>>>>>> 59926a14aa21c45e8f70d0e890a429605261e1a1
 
 \RequirePackage[german=guillemets]{csquotes}
 \RequirePackage{amsmath}
