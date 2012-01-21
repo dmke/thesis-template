@@ -1,0 +1,14 @@
+glossary.ist
+*.log
+*-blx.bib
+*.acn
+*.aux
+*.glo
+*.log
+*.out
+*.pdf
+*.synctex.gz
+*.toc
+*~
+.\#
+\#*
