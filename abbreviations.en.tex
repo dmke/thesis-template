@@ -1,12 +1,18 @@
-\addto\captionsenglish{
 
-%% common macros
-  \maybespaceafter{eg}{e.\,g.}
 
-  \def\monthyear{%
-    \ifcase\month\or January\or February\or March\or%
-      April\or May\or June\or July\or August\or%
-      September\or October\or November\or%
-      December\fi~\the\year\xspace%
+\AtBeginDocument{\@ifpackageloaded[english]{babel}
+  \addto\captionsenglish{
+  %% common macros
+    \maybespaceafter{eg}{e.\,g.}%
+}
+
+%% misc
+  \addto\captionsenglish{
+    \def\monthyear{%
+      \ifcase\month\or January\or February\or March\or%
+        April\or May\or June\or July\or August\or%
+        September\or October\or November\or%
+        December\fi~\the\year\xspace%
+    }%
   }
 }
