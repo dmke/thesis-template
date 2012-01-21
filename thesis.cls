@@ -130,30 +130,18 @@
 \def\authoremail#1{\gdef\@authoremail{#1}}
 \def\@authoremail{}
 
-% #1: authors
-% #2: reviewers
-\def\resetand{\gdef\and{\firstand}}
-\def\firstand{\unskip\gdef\and{\secondand}, \ignorespaces}
-\def\secondand{\unskip\gdef\and{\thirdand}, \ignorespaces}
-\def\thirdand{\unskip\gdef\and{\fourthand}, \ignorespaces}
-\def\fourthand{\unskip\gdef\and{\fifthand}, \ignorespaces}
-\def\fifthand{\unskip\resetand\ignorespaces,\\&}
-\def\authors#1#2{%
-  \def\@reviewers{#2}%
-  \def\arraystretch{1}%
-  \ifx\@reviewers\@empty\else%
-    \def\@reviewers{\resetand durchgesehen von: & #2 \\}%
-  \fi%
-  \resetand%
-  \begin{flushright}
-    \itshape\small%
-    \begin{tabular}{rl@{}}
-      \hiderowcolors verfasst von: & #1 \\%
-      \@reviewers \showrowcolors
-    \end{tabular}
-  \end{flushright}
-  \def\arraystretch{1.5}%
-}
+\def\institute#1{\gdef\@institute{#1}}
+\def\@institute{}
+
+\def\department#1{\gdef\@department{#1}}
+\def\@department{}
+
+\def\examiner#1{\gdef\@examiner{#1}}
+\def\@examiner{}
+
+\def\supervisor#1{\gdef\@supervisor{#1}}
+\def\@supervisor{}
+
 
 % adjust some lengths
 \setcounter{secnumdepth}{5}%     we've got 5 heading levels that got numbered
@@ -471,7 +459,7 @@
     \node[anchor=west, text width=\textwidth, inner sep=0pt]
       (rightmark text left)
       at ($(current page.north west) + (1in+\oddsidemargin+\hoffset,-3em)$)
-      {\parbox{\textwidth}{\raggedright\small\@titleshort\ifthesis@hassubtitle~--~\@subtitleshort\fi}};
+      {\parbox{\textwidth}{\raggedright\small\@titleshort\par\diplomaname}};
     \node[anchor=north east, text width=\textwidth, inner sep=0pt]
       (rightmark text right)
       at (rightmark text left.north east)
@@ -490,7 +478,7 @@
     \node[anchor=west, text width=\textwidth, inner sep=0pt]
       (leftmark text left)
       at ($(current page.north west) + (1in+\evensidemargin+\hoffset,-3em)$)
-      {\parbox{\textwidth}{\raggedleft\small\@titleshort\ifthesis@hassubtitle~--~\@subtitleshort\fi}};
+      {\parbox{\textwidth}{\raggedleft\small\@titleshort\par\diplomaname}};
     \node[anchor=north east, text width=\textwidth, inner sep=0pt]
       (leftmark text right)
       at (leftmark text left.north east)
@@ -549,30 +537,39 @@
 
 \renewcommand\maketitle{%
   \thispagestyle{empty}%
-  \strut\vfill%
   \global\@topnum\z@% prevent images to appear on top of first page
   \begin{center}
+    \sffamily
+    \includegraphics[width=.5\linewidth]{images/institute-logo}\\
+    \@department
+    \vfill%
     \begin{Huge}
       \color{Night Blue}%
       \bfseries%
-      \@title
+      \diplomaname
     \end{Huge}\\[1cm]
     \begin{LARGE}
       \color{Night Blue}%
       \bfseries%
+      \@title
+    \end{LARGE}\\
+    \begin{large}
+      \color{Night Blue}%
+      \bfseries%
       \@subtitle
-    \end{LARGE}\\[2cm]
+    \end{large}\\[2cm]
     \def\and{\\}%
-    \def\arraystretch{1.1}%    local setup
-    \setlength\tabcolsep{4pt}% local setup
-    \def\and{\end{tabular} ~~ \begin{tabular}[t]{c}}% \def\and{\\}
-    \begin{tabular}[t]{c}% left column: names
-      \@author \\[1em]
-    \end{tabular}%
-    \vfill%
+    \def\arraystretch{1.1}%
+    \setlength\tabcolsep{4pt}%
+    \def\and{$\qquad$}
+    \@author \\[3em]
     \strut\@date\par%
+    \vfill%
+    \begin{tabular}{rl}
+      \textbf{\examinername:} & \@examiner \\
+      \textbf{\supervisorname:} & \@supervisor
+    \end{tabular}
   \end{center}
-  \let\@authoremail\relax% is not needed anymore
   \def\and{, }
   \hypersetup{pdftitle=\@title}
   \hypersetup{pdfsubject=\@subtitle}
