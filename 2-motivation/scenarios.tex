@@ -1,0 +1,57 @@
+
+\section{Betrachtete Szenarien}
+\label{sec:motivation:scenario}
+
+\authors{\DE \and \JF}{\WF \and \LM \and \MW \and \DH}
+
+Um den Zweck des \f-Systems und die damit zu erreichenden Ziele
+festlegen zu können, bedarf es einer genauen Darstellung der
+Anwendungsszenarien.
+
+Das \f-System soll in erster Linie Sicherheitsanalysten beim
+systematischen Testen von \glspl{glos:ids}n unterstützen. Dabei ist
+der Aufbau der Netze, die durch ein \acr{ids} überwacht werden, von
+Organisation zu Organisation sehr unterschiedlich. Diesem Umstand muss
+deshalb bei der Entwicklung des \f-Systems Rechnung getragen
+werden. Diese Heterogenität bezieht sich allerdings nicht allein auf
+die Rechnernetze. Auch die verwendeten \acr{ids} sowie deren
+Regelsätze sind unterschiedlich. Der Markt bietet hier sowohl freie
+Systeme (\zB \gls{glos:prelude-ids}) als auch kommerzielle Lösungen an.
+
+Natürlich sollen \acr{ids} nicht nur getestet werden können,
+die Ergebnisse der Tests müssen auch vergleich- und bewertbar
+sein. Aufgrund des \f-Systems soll ein Sicherheitsanalyst die
+Möglichkeit haben zu entscheiden, welche Konfiguration bzw. Regelmenge
+für den jeweiligen Anwendungsfall optimal ist. Dazu ist es nötig, dass
+das \f-System in der Lage ist, zwei grundlegende Aufgaben zu
+erfüllen. Dem Anwender soll es mit einer leicht zu bedienenden
+grafischen Oberfläche bei den Testangriffen auf das eigene Netz
+assistieren, während eine weitere Komponente im Hintergrund die durch
+den Angriff erzeugten \glospl{idmef-event} registriert und
+aufbereitet.
+
+Als zusätzliche Funktionalität kann sich das \f-System die vom
+Anwender ausgeführten Angriffe merken, damit diese auch auf andere
+Netze durch eine KI-Komponente semi- und vollautomatisch angewendet
+werden können. Diese Angriffsautomatisierung darf jedoch nur soweit
+gehen, dass die KI Vorschläge über eventuelle nächste Angriffsziele
+innerhalb des Netzes macht.
+
+Um die Wiederverwendbarkeit der mit dem \f-System durchgeführten
+\acr{ids}-Tests zu gewährleisten, muss es einem Anwender möglich sein,
+einzelne Angriffschritte in einem austauschbaren Format zu definieren,
+damit andere sie wiederverwenden können. Eine dazu nötige
+Planungskomponente kann dafür genutzt werden, Sicherheitstests für
+Rechnernetze ähnlich der Unit-Tests aus der Softwaretechnik zu
+entwickeln, die nach jeder Veränderung an der Netzinfrastruktur erneut
+ausgeführt werden.
+
+Ein letzter wichtiger Aspekt bei der Betrachtung der möglichen
+Einsatzszenarien ist die Integration bereits bestehender Komponenten
+zum Penetration-Testing innerhalb einer Organisation. Das
+\f-System soll es ermöglichen, bisher verwendete Methoden einfach
+an das System anzubinden. Daher spielt auch die Erweiterbarkeit des
+\f-Systems eine wichtige Rolle. Hierzu haben wir eine Architektur
+entwickelt, die das Ergänzen von Methoden erlaubt und das \glos{msf}
+verwendet, welches weitere Schnittstellen zu diversen bereits
+vorhandenen Werkzeugen mitbringt. 

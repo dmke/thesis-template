@@ -1,0 +1,34 @@
+% \newacronym{label}{kurz}{lang}
+% Zugriff via \gls{label} und Co.
+% 
+% Beispiel:
+% 
+%   \newacronym{acr:da}{DA}{Diplomarbeit}
+% 
+% wird im Text
+% 
+%   Heute schreibe ich meine \gls{arc:da}. Diese \gls{arc:da}.
+% 
+% zu
+% 
+%   Heute schreibe ich meine Diplomarbeit (DA). Diese DA.
+% 
+% Nur bei der ersten Verwendung der Abkürzung wird diese in langer Form
+% dargestellt. Weitere Vorkommen nutzen die Kurz-Version.
+% 
+% Neben \gls{} gibt es auch noch \Gls{} und \GLS{}, welche die Groß- und
+% Klein-Schreibung beeinflussen. Beispiel:
+% 
+%   \newacronym{acr:http}{http}{Hypertext Transfer Protocol}
+%   \gls{acr:http} --> http
+%   \Gls{acr:http} --> Http
+%   \GLS{acr:http} --> HTTP
+% 
+% Zur Vereinfachung gibt es auch die Befehle \acr{}, \Acr{} und \ACR{}. Diese
+% Befehle sind äquivalent:
+% 
+%   \gls{acr:foo} <=> \acr{foo}
+%   \Gls{acr:foo} <=> \Acr{foo}
+%   \GLS{acr:foo} <=> \ACR{foo}
+%
+

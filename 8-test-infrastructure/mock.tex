@@ -1,0 +1,66 @@
+\section{Mock-Objekte}
+\label{sec:test_mock}
+\authors{\HM}{\LM \and \MW \and \JF}
+
+Mock-Objekte werden beim Testen in der Softwareentwicklung verwendet, wenn nur
+Teile einer Software getestete werden sollen, die Tests durch die Größe des Systems
+sehr kompliziert geworden sind oder das Ausführen der Tests sehr zeitaufwändig \zB durch Anfragen übers Netz ist.
+
+Oft gibt es Probleme, wenn eine Netzverbindung oder eine Datenbank zum
+Betrieb der Software benötigt wird.
+Die Abhängigkeit von Netzanbindungen oder Datenbanken kann \zB reduziert
+werden, indem die Klassen die für die Netzzugriff bzw. Datenbankanfragen
+zuständig sind, durch Mock-Objekte ersetzt werden. Die Mock-Objekte
+liefern immer vorhersagbare Daten auf eine bestimmte Anfrage zurück und
+vereinfacht und beschleunigen so das entwickeln und ausführen der Tests.
+
+Außerdem will man oft auch nur einen Teil der Software testen und nicht die
+gesamte Software, weil \zB bestimmte Teile noch nicht entwickelt sind oder
+sehr instabil sind. In diesen Fällen kann zum Testen anstatt der richtigen
+Bibliothek oder Teilkomponenten ein Mock verwendet werden.
+
+Ein andere Anwendungsbereich ist, wenn verwendetet Bibliotheken unvorhersagbare Daten zurück liefern wie
+\zB ein Zufallsgenerator. Dieser Zufallsgenerator kann zum
+Testen durch einen Mock ersetzt werden, der immer einen konstanten Wert
+zurück liefert und damit vorhersagbare Ergebnisse bei den zu testenden Methoden
+erzeugt, damit die Rückgabe der zu testenden Methoden auch vorhersagbar ist
+und im Tests überprüft werden kann.
+
+Das \f-System verwendet \acr{msf} zum Ausführen von Angriffen.
+Damit ein Angriff ausgeführt werden kann muss unter einer bekannten
+\acr{ip}-Adresse ein verwundbares System erreichbar sein.
+Dann benötigt so ein Angriff auf aktuellen System mindestens
+10 Sekunden.
+Damit auch komplexere Tests ohne das Vorhandensein eines angreifbaren
+Systems schnell ausgeführt werden können haben wir einen Mock von
+\acr{msf} erstellt.
+Dieser Mock von \acr{msf} umfasst nur die Methoden die von unserer
+Software aufgerufen werden und diese geben größtenteils konstante
+und vorhersagbare Werte zurück.
+Zusätzlich zum Mock von \acr{msf} haben wir auch Teile des \acr{nmap}-Scans
+gemockt, damit dieser auch getestet werden kann.
+Damit nur ein Programm gestartet werden muss wird die \glos{drb}-Verbindung
+auch durch ein Mock ersetzt.
+
+Alle Funktionstests des \f-Cores benutzen diesen Mock.
+Wir haben unter anderem einen Test der einen kompletten Angriff unter Verwendung des Mocks
+durchführt.
+Bei diesem Test wird zuerst ein Scan durchgeführt.
+Mit diesem Test werden die meisten Teile des Codes zum Scannen von Hosts
+getestete, da nur der Aufruf von \acr{nmap} durch den Mock ersetzt wurde.
+Nach dem Scan wird der Angriff auf einen Host durchgeführt.
+Hierbei werden große Teile des Angriffscodes der Action Komponente getestet,
+unter anderem kann die richtige Auswahl des Exploits für dieses Ziel und das
+eigentliche ausführen des Exploits getestete werden.
+Dann wird überprüft, ob die Session die nach einem erfolgreichen Angriff
+normalerweise von \acr{msf} erstellt wird auch richtig vom \f-System
+ verarbeitete wird.
+Am Ende haben wir genau überprüft, ob sich alle erwarteten Daten genau
+so in der Datenbank des \f-Systems befinden.
+
+Dieses geht bei der Verwendung des Mocks besser als beim Test gegen ein 
+richtiges Systeme, da die Rückgaben vom \acr{msf}-Mock immer genau vorhersagbar
+sind im Gegensatz zu einem richtigen Angriff bei dem auch etwas falsch laufen kann.
+Einen sehr ähnlichen Test führen wir auch als Integrationstest mit einem
+echten \acr{msf} gegen echt virtuelle Maschinen aus, dieser benötigt aber
+bei den meisten Entwicklern 10 mal so lange zum ausführen.

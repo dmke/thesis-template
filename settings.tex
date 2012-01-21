@@ -1,0 +1,83 @@
+\makeatletter
+
+% basically: "\maybespaceafter{foo}{bar}" defines "\foo" which prints "bar"
+\def\maybespaceafter#1#2{%
+  \expandafter\def\csname #1\endcsname{#2\xspace}%
+}
+
+%% common macros
+\maybespaceafter{zB}{z.\,B.}
+\maybespaceafter{dh}{d.\,h.}
+\maybespaceafter{uU}{u.\,U.}
+\maybespaceafter{uA}{u.\,A.}
+\maybespaceafter{su}{s.\,u.}
+\maybespaceafter{idR}{i.\,d.\,R.}
+
+\newcommand*{\acr}[1]{\gls{acr:#1}}
+\newcommand*{\Acr}[1]{\Gls{acr:#1}}
+\newcommand*{\ACR}[1]{\GLS{acr:#1}}
+\newcommand*{\acrpl}[1]{\glspl{acr:#1}}
+\newcommand*{\Acrpl}[1]{\Glspl{acr:#1}}
+\newcommand*{\ACRpl}[1]{\GLSpl{acr:#1}}
+
+\newcommand*{\glos}[1]{\gls{glos:#1}}
+\newcommand*{\Glos}[1]{\Gls{glos:#1}}
+\newcommand*{\GLOS}[1]{\GLS{glos:#1}}
+\newcommand*{\glospl}[1]{\glspl{glos:#1}}
+\newcommand*{\Glospl}[1]{\Glspl{glos:#1}}
+\newcommand*{\GLOSpl}[1]{\GLSpl{glos:#1}}
+
+%% math tools
+
+\def\N{\ensuremath{\mathbb{N}}}
+\def\Z{\ensuremath{\mathbb{Z}}}
+\def\I{\ensuremath{\mathbb{I}}}
+\def\Q{\ensuremath{\mathbb{Q}}}
+\def\R{\ensuremath{\mathbb{R}}}
+\def\C{\ensuremath{\mathbb{C}}}
+\DeclareMathOperator{\sgn}{\text{sgn}}
+
+%% misc
+
+\def\monthyear{%
+  \ifcase\month\or Januar\or Februar\or März\or%
+    April\or Mai\or Juni\or Juli\or August\or%
+    September\or Oktober\or November\or%
+    Dezember\fi~\the\year\xspace%
+}
+
+% acronyms style
+\newglossarystyle{thesisacr}{%
+  \renewenvironment{theglossary}%
+    {\begin{description}[style=sameline]}
+    {\end{description}}
+  \renewcommand*{\glossaryheader}{}%
+  \renewcommand*{\glsgroupheading}[1]{}%
+  \renewcommand*{\glossaryentryfield}[5]{%
+      \item[\glstarget{##1}{##2}] ##3, S.~##5
+  }%
+  \renewcommand*{\glsgroupskip}{\indexspace}%
+}
+
+% glossary style
+\newglossarystyle{thesis}{%
+  \renewenvironment{theglossary}%
+    {\begin{description}}
+    {\end{description}}
+  \renewcommand*{\glossaryheader}{}%
+  \renewcommand*{\glsgroupheading}[1]{}%
+  \renewcommand*{\glossaryentryfield}[5]{%
+      \item[\glstarget{##1}{##2}] ##3 \\
+      S.~##5
+  }%
+  \renewcommand*{\glsgroupskip}{\indexspace}%
+}
+
+%% some tolerance parameters
+\tolerance=400
+\hfuzz=0.2pt
+
+%% do not change these lines
+\makeatother
+\endinput
+%% anything below this line is ignored

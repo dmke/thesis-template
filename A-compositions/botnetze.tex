@@ -1,0 +1,242 @@
+\section{Botnetze}
+\label{compositions:botnetze}
+
+\subsection{Abstract}
+Netzwerke, die aus gekaperten Rechnern unter der gemeinsamen Kontrolle eines 
+Angreifers bestehen, gehören zu den größten Gefahren des Internets. Diese Netze 
+werden für verteilte Denial-of-Service-Angriffe und zum Versenden von Spam 
+verwendet.
+
+Zuerst wird die Frage geklärt, was ein Bot ist und woher der Name stammt. In dem
+Zusammenhang wird der Begriff Botnet erläutert. Anschließend folgt eine 
+Übersicht aktiver Botnetze, sowie deren ungefähre Größe. Danach wird der 
+Einsatzzweck von solchen Botnetzen beschrieben und wie mit Hilfe dieser 
+Netzwerke viel Geld verdient werden kann. Der Hauptteil dieser Ausarbeitung 
+beschäftigt sich mit den verwendeten Technologien in Botnetzen. Es werden unter 
+anderem die Kommunikationsformen, die Verbreitungstrategien und die 
+Selbstverteidigung der Bots näher betrachtet. Daraufhin wird aufgezeigt wie 
+diese Botnetze erkannt und entfernt werden können. 
+
+Am Ende des Referats wird der mögliche Nutzen bestimmter Bot-Technologien für 
+FIDIUS aufgezeigt. 
+
+\subsection{Definition Bot/Botnet}
+Bei einem Bot handelt es sich um ein Computerprogramm, das auf einen
+kompromittierten System installiert wird. Dieser Bot stellt dem Angreifer einen
+Kommunikationskanal zur Verfügung um das System zu kontrollieren. Der Begriff Bot
+ist eine verkürzte Form des englischen Wortes Robot. Ein Bot besitzt 
+Eigenschaften eines Wurms um sich autonom zu verbreiten, sowie Eigenschaften 
+eines Trojaners, um Befehle des Angreifers entgegenzunehmen. 
+
+Werden mehrere Bots zu einem Netzwerk zusammengeschlossen, spricht man von einem
+Botnetz.
+
+\subsection{Übersicht aktiver Botnetze}
+Die nachfolgende Tabelle~\ref{fig:botnetz_uebersicht} zeigt eine Übersicht der 
+bisher bekannten aktiven  Botnetze bis zum Jahr 2009, sowie deren geschätzte 
+Größe. Dabei kann ein Computer mit verschiedenen Bots infiziert sein \cite{de-wiki:botnetze}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{images/botnetz_uebersicht}
+  \caption{Übersicht von aktiven Botnetzen}
+  \label{fig:botnetz_uebersicht}
+\end{figure} 
+
+\subsection{Einsatzszenarien}
+Um mit infizierten Computern Geld zu verdienen, gibt es mehrere Möglichkeiten.
+DDoS-Attacken, Diebstahl vertraulicher Informationen, Spamversand, Phishing, 
+betrügerische Generierung von Klicks sowie der Download von Adware
+und Schadprogrammen. Mit einem Botnetz können alle oben genannten Angriffe 
+gleichzeitig durchgeführt werden. Die Abbildung~\ref{fig:botnetz_einsatz}
+veranschaulicht nochmal die möglichen Einsatzszenarien eines Botnetzes \cite{namestnikov}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{images/botnetz_einsatz}
+  \caption{Geschäfte mit Botnetzen}
+  \label{fig:botnetz_einsatz}
+\end{figure} 
+
+In den folgenden Abschnitten werden die drei populärsten Angriffarten beschrieben.
+
+\subsubsection{DDoS-Attacken}
+Eine Distributed Denial-of-Service-Attacke (DDoS-Attacke) ist ein Angriff auf ein
+Computersystem mit dem Ziel, dieses zu überlasten, damit es nicht mehr in der
+Lage ist, Anfragen zu bearbeiten. DDoS-Attacken sind eine effektive Waffe um
+Konkurrenten auszuschalten.
+
+\subsubsection{Diebstahl vertraulicher Informationen}
+Vertraulichen Informationen wie Kreditkartennummern, Bankinformationen und 
+Passwörter zu verschiedenen Diensten (E-Mail, FTP, Instant-Messenger), die auf 
+Anwendercomputern gespeichert sind, können von dem Angreifer ausgespäht werden.
+Die gestohlenen Informationen werden dann weiter verkauft oder von dem Angreifer
+selbst missbraucht.
+
+\subsubsection{Spamversand}
+Die gekaperten Computer werden zum Versenden von unerwünschten Mitteilungen
+(Spam-Mails) missbraucht. Der Versand von unerwünschten Mitteilungen ist eine 
+der wichtigsten Funktionen von Botnetzen.
+
+
+\subsection{Verwendete Technologien in Botnetzen}
+In den folgenden Abschnitten werden Technologien beschrieben, die in Botnetzen
+eingesetzt werden.
+\subsubsection{Topologien}
+Die Grafik~\ref{fig:botnetz_topologie} veranschaulicht die zwei 
+möglichen Netzwerk-Topologien eines Botnetzes \cite{dahl}.
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{images/botnetz_topologie}
+  \caption{Botnetz-Topologien}
+  \label{fig:botnetz_topologie}
+\end{figure}
+Bei der zentralisierten Topologie verbinden sich alle
+infizierten Computer mit einer Steuerungszentrale ($Command \& Control Centre$) oder
+auch $C\&C$. Die Steuerungszentrale registriert neu hinzugekommene Bots in seiner
+Datenbank, überwacht ihren Zustand und schickt ihnen Befehle.
+
+Der Aufbau eines dezentralisierten Botnetzes ist in der Praxis aufwändig, da 
+jeder neu infizierte Computer über eine Liste der Bots verfügen muss, mit denen 
+er sich innerhalb des Botnetzes verbinden soll.
+
+\subsubsection{Kommunikation}
+Damit die Befehle des Botnetz-Betreibers alle infizierten Rechner erreichen, 
+muss eine Verbindung zwischen den Bots und der Steuerungszentrale bestehen. 
+Eine mögliche Kommunikationsart zwischen Bot und Steuerungszentrale ist der
+\gls{acr:irc}-orientierte Datenaustausch. Dabei verbindet sich jeder 
+infizierte Computer mit einem vordefinierten \gls{acr:irc}-Server. 
+Danach empfängt der Bot über einen bestimmten \gls{acr:irc}-Kanal die Befehle des Botnetz-Betreibers.
+
+Eine weitere Kommunikationsart zwischen Bot und Steuerungszentrale ist die 
+\gls{acr:im}-orientierte. Diese Kommunikationsart ist nicht sehr populär, weil 
+der Datentransfer über \gls{acr:im}-Dienste wie AOL, MSN oder ICQ abläuft
+und jeder infizierte Computer dazu einen eigenen \gls{acr:im}-Account benötigt, weil
+es nicht möglich ist, sich mit dem gleichen Account von unterschiedlichen 
+Computern aus einzuloggen. Zudem verhindern die \gls{acr:im}-Anbieter die automatische
+Generierung von Accounts.
+
+Die Web-orientiert Kommunikationsart wird immer beliebter bei Botnetz-Betreibern,
+weil solche Botnetze sich einfach einrichten lassen und auf viele Webserver
+zurückgegriffen werden kann. Ebenso lässt sich das gesamte Botnetz komfortabel über
+ein Web-Interface steuern. Der Bot verbindet sich mit dem Webserver, welcher
+als Stererungszentrale dient, und nimmt Befehle entgegen \cite{kamluk}. 
+
+\subsubsection{Scanning-Mechanismen}
+Damit sich ein Bot möglichst schnell unentdeckt verbreiten kann, benötigt der
+Bot eine Scanning-Strategie. Jeder Bot könnte zur Verbreitung genutzt werden.
+Tatsächlich werden nur wenige Bots zum Scannen und Verbreiten genutzt, damit nur
+einige Bots entdeckt werden und nicht das gesamte Botnetz. Eine mögliche
+Strategie sich zu verbreiten ist das \emph{Hit"=list"=Scanning}. Der Bot 
+sucht nicht selbst nach verwundbaren Systeme, sondern nutzt eine vordefinierte
+Liste mit verwundbaren Zielsystemen. Diese Liste wird dann abgearbeitet und 
+jedes enthaltene System wird angegriffen. Die Liste kann im Bot vorkompiliert
+sein oder kann von einem Webserver nachgeladen werden.
+
+Bei der \emph{Topological"=Scanning"=Strategie} verbreitet sich der Bot mittels
+eines Peer"=to"=Peer"=Netzes. Dazu wird die Liste der verwundbaren Zielsystemem
+von bekannten Peers benutzt.
+
+Die \emph{Flash"=Scanning"=Strategie} bietet eine weitere Möglichkeit um
+verwundbare Zielsysteme zu finden. Bei dieser Strategie besteht bereits
+eine Liste mit verwundbaren Computersystemen oder sie wird dynamisch
+erstellt in dem \glos{googledorks} dazu missbraucht werden. Diese Art der Verbreitung
+ist am schnellsten, weil kein Scann mehr durchgeführt werden muss.
+
+Nachdem ein System kompromittiert wurde, benötigen die Bots eine Reinfektions-Strategie, 
+um bereits infizierte Systeme nicht nochmal zu scannen bzw. zu infizieren. Dies
+erfordert allerdings eine Übersicht aller Bots im Bonetz. Diese 
+Reinfektions-Strategie wird auch als \emph{Permutation Scanning} bezeichnet
+\cite{baier}.
+
+\subsubsection{Infektion-Mechanismen}
+Bei den Infektions-Mechanismen wird zwischen interaktiver Infektion und
+automatisierter Infektion unterschieden.
+
+Bei interaktiven Infektionen findet eine direkte Interaktion mit dem
+Benutzer des zu infizierenden Computers statt. Der Nutzer des angegriffenen Systems 
+wird dazu verleitet infizierte Programme herunterzuladen und auszuführen. Wenn
+der Benutzer dazu aufgefordert wird bestimmte Browser-Plugins zu installieren,
+so bezeichnet man diese Art von Angriff \emph{Drive"=by"=download}. 
+
+Bei automatisierten Infektionen werden Sicherheitslücken ausgenutzt. Man
+unterscheidet zwischen Lokalen-Exploits und Remote-Exploits. Die Lokalen-Exploits
+dienen in erster Linie dazu, die vorhanden Rechte auf dem infizierten System
+auszuweiten. Die Remote-Exploits dienen zum Infizieren von Computersystemen
+über das Internet oder Netzwerk. Bei den automatisierten Infektionen findet
+keine Interaktion mit dem Benutzer statt. Der Benutzer merkt in der Regel nicht,
+wenn der Computer infiziert wurde \cite{baier}.
+
+\subsubsection{Update-Mechanismen}
+Jeder neue Bot bringt einen Update-Mechanismus mit. Mit Hilfe dieser Update-Funktion 
+kann der Botnetz-Betreiber Fehler in den Bots beseitigen oder den Bot um weitere 
+Funktionalität erweitern. Ebenso wichtig wie die Fehlerbehebung und Erweiterung
+des Bots ist die Aktualiserung der Signatur des Bots. Anhand von Signaturen
+werden infizierte Programme von Anti-Viren Herstellern erkannt. Und wenn sich die 
+Signatur ändert, so wird die Chance erhöht vor Anti-Viren Programmen unentdeckt
+zu bleiben.
+
+\subsubsection{Selbstverteitigung-Mechanismen}
+Jeder Botnetz-Betreiber hat zwei Sicherheitsziele. Das erste Sicherheitsziel
+ist die Stuerungszentrale ($Command \& Control Centre$). Dieser Server ist die 
+zentrale Komponente im Botnetz. Diese muss besonders gegen Übernahme geschützt werden.
+Eine Schutzmaßnahme vor Abschaltung oder Übernahme der Stuerungszentrale wäre
+das verlagern des Serverstandorts ins Ausland wie z.B. Russland oder Panama.
+Diese Länder bieten \emph{Bullet"=Proof"=Hosting} an. Das bedeutet, dass Anfragen
+und Beschwerden direkt entsorgt werden und denen nicht nachgegangen wird.
+Falls die IP-Adresse doch gesperrt werden sollte, so greift man alternativ auf DynDNS
+zurück. Aktualisiert sich die IP-Adresse, so wird auch der DNS-Eintrag aktualisiert.
+Die neueste Form dabei ist \emph{Fast-Flux}. Bei Fast-Flux werden einer Domain 
+viele verschiedene IP-Adressen zugeordnet (Round-Robbin-DNS). Der Bot erhält zufällig 
+eine Adresse. Allerdings führt diese Adresse nicht zur richtigen Stuerungszentrale,
+sondern zu einem infiziertem Bot, der die Anfrage an den richtige Stuerungszentrale
+weiterleitet. Mit dieser Technik bleibt die Stuerungszentrale unentdeckt, da
+nur wenige Bots mit dieser kommunizieren.
+
+Damit das Botnetz wachsen kann, müssen sich die Bots gegen Entfernung
+vom System schützen. Das ist das zweite Sicherheitsziel eines Botnetz-Betreibers.
+Die Bots müssen vor Anti-Viren Programmen geschützt werden. Dazu kann sich
+der Bot als Root-Kit im System installieren und ist somit fast unsichtbar im System agieren.
+Ebenso sollte der Bot eine Ausführung verhindern, wenn ein Honeypot, VMWare 
+oder ein Debugger erkannt wurde. Falls Anti-Viren Programme auf dem infizierten
+System entdeckt werden, so sollten diese bei Bedarf deaktiviert werden. Wenn sich
+der Bot im System installiert hat, so sollte er sich unauffällig verhalten
+(wenig CPU, Speicher und Netzverkehr verbrauchen), damit er weiter unentdeckt
+bleibt.
+
+\subsection{Erkennung von Botnetzen}
+Botznetze können auf mehrere Arten erkannt werden. Eine Möglichkeit das Verhalten
+von Bots zu untersuchen, bieten Honeynets. Honeynets bestehen aus mehreren Honeypots,
+die mit miteinander vernetzt sind. Eine weitere Möglichkeit Botnetze zu entdecken
+ist die Analyse des Netzwerkverkehrs. Es gibt verschiedene Verfahren die sich zur 
+Analyse des Netzwerkverkehrs eignen. 
+
+Die \emph{signaturbasierten Verfahren} untersuchen den Netzwerkverkehr auf eine 
+Bot-Infektion. Snort setzt dieses Verfahren ein, um Angriffe zu erkennen.
+Der Nachteil dieses Verfahren besteht darin, dass nur bekannte Bedrohungen erkannt
+werden können. 
+
+Die \emph{anomaliebasierten Verfahren} beobachten den Netzwerkverkehr auf
+Unregelmäßigkeiten. Ein Beispiel hierfür wäre die Übertragung von großen
+Mengen an Daten oder die Kommunikation auf unüblichen Ports.
+
+Die \emph{DNS-basierten Verfahren} untersuchen die DNS-Anfragen zur 
+Steuerungszentrale. Ein Botnetz kann durch hohen DNS-Verkehr aufgespürt werden.
+Der Ansatz von Schonewille und Van Helmond beruht darauf, dass Bots Kontakt zu
+deaktivierten $C \& C$-Server herstellen wollen. Dies führt zu einer großen Anzahl
+wiederauftretender Namensfehler, welche auffällig werden.
+
+\subsection{Möglicher Nutzen für FIDIUS}
+Nach Analyse mehrerer Bots, stellte sich für mich herraus, dass Bots vor allem
+auf Windows-Systemen verbreitet sind. Dies liegt nicht nur an der Architektur
+von Windows, sondern auch daran, dass die Allgemeinheit fast ausschließlich
+Windows nutzt. Für Bot-Entwickler lohnt sich der Aufwand nicht für andere
+Betriebssysteme zu entwickeln. Außerdem müssen Bots klein und möglichst ohne
+größere Abhängigkeiten auskommen, damit der Bot auf möglichst vielen Computern
+ausgeführt werden kann. Dieses ist bei interpretierten Sprachen nicht gegeben,
+weil nicht jeder Anwender diese installiert hat. Als Topologie kommt nur der
+zentralisierte Ansatz in Frage. Alles andere ist nicht nicht kontrollierbar.
+Möglich wäre es die Steuerungszentrale in Ruby zu schreiben, die Bots in C.
+Die Bots bekämen keine eigene Intelligenz, sondern würden benötigte Teile von
+der Steuerungszentrale nachladen.
+

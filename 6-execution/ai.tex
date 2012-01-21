@@ -1,0 +1,415 @@
+\section{Künstliche Intelligenz}
+\label{sec:ki}
+\authors{\DK}{\LM \and \MW \and \DE}
+
+Um Rechnernetze automatisiert auf Schwachstellen zu testen soll eine
+Alternative zu \enquote{Brute Force}-Methoden wie \enquote{msf-autopwn} entwickelt
+werden. Ziel ist es ein Tool zu schreiben, dass sich möglichst
+unauffällig verhält, den Nutzer unterstützt und mit verschiedenen
+Szenarien umgehen kann.
+
+Dazu sollen Methoden der Künstlichen Intelligenz eingesetzt werden.
+Das erste Szenario ist unser Gray-Box-Szenario.  In diesem liegt
+dem Systemverwalter Wissen über die Topologie und die Komponenten des
+Netzes vor.  Unter dieser Annahme eignet sich \enquote{action state
+planning} \cite{russel-norvig-2003} als KI-Komponente. Im speziellen
+verwenden wir \enquote{contingent planning}. In dieser Art zu Planen ist
+es möglich \enquote{sensing actions} einzufügen.  Dadurch ist es
+beispielsweise möglich dem Planer die Information über die Services
+eines Hosts vorzuenthalten. Diese werden dann zur Laufzeit erfasst.
+
+Das zweite Szenario ist unser Black-Box-Szenario. In diesem Fall
+gehen wir davon aus, dass kein Wissen über das Netz vorhanden ist. In
+diesem Szenario soll sich ein Neuronales Netz (siehe
+\cite{russel-norvig-2003,mitchel}) im Laufe der Zeit an die
+Präferenzen des Nutzers anpassen und somit qualifizierte Vorschläge
+für die nächsten Aktionen geben.
+
+Eine dritte KI-Komponente soll es ermöglichen Angriffe zu
+\enquote{dekorrelieren}. Viele \glospl{ids} erkennen Angriffe
+nicht, wenn zwischen den Einzelaktionen zuviel Zeit vergeht oder sich
+die IP-Adresse des Angreifers ändert. Um diese Schwachstellen zu
+nutzen soll ein Hidden Markov Model trainiert werden.  Dieses soll
+lernen, welche \enquote{Dekorrelationsaktionen} wie \enquote{Warten} oder
+\enquote{IP-Adresswechsel} und wie viele davon nötig sind, um möglichst wenig
+Aufsehen zu erregen. Diese Komponente ist noch in Planung und die
+Beschreibung befindet sich im Ausblick~\ref{chp:outlook}.
+
+\subsection{Planen: Gray-Box-Szenario}
+
+Da in unserem Gray-Box-Szenario die meisten Komponenten des Netzes
+bekannt sind, kann mit \enquote{action state planning} ein Angriffsplan
+erstellt werden. In unserem Ansatz wird zwischen zwei Planarten
+unterschieden. Zum einen kommt klassisches Planen zum Einsatz. In
+diesem Fall muss das gesamte Wissen vor der Plangenerierung
+feststehen. Hier wird der \enquote{Fast Forward Planner} (FF) von Hoffmann
+\cite{FF} verwendet. Im zweiten Fall können bestimmte Elemente des
+Plans offen gelassen werden.  Dies können Services die auf einem Host
+laufen sein oder die Existenz eines Web-Servers. In unserer
+Realisierung verwenden wir \enquote{contingent planning} (cFF) unter Einsatz
+des \enquote{contingent Fast Forward Planers}, ebenfalls von Hoffmann
+\cite{CFF}.
+
+Wenn klassisches Planen eingesetzt wird, muss der Nutzer alle Hosts,
+die Verbindungen, die Subnetze und alle Services im Voraus angeben.
+		
+Nutzt der Nutzer \enquote{contingent planning}, werden die selben
+Netzartefakte genutzt, ausgenommen der Services. In diesem Fall gibt
+der Nutzer nur an, welche Services ihn interessieren (für die ein
+\glos{exploit} existiert) und der Agent fügt eine \enquote{sensing action} für das
+Bestimmen der Services ein.  Ein \enquote{contingent} Plan unterscheidet
+sich vom klassischen Planen. Ein klassischer Plan kann als Sequenz von
+Aktionen gesehen werden, die zu einem Ziel führen.  Bis auf die
+\enquote{sensing actions} trifft dies auch auf \enquote{contingent} Pläne zu. In
+einer \enquote{sensing action} wird eine Verzweigung im Plan pro Service
+angegeben (siehe Abbildung~\ref{fig:cff_plan}).
+
+\begin{figure}
+  \vspace*{1em}
+  \begin{center}
+   \begin{tikzpicture}[
+      box/.style={draw,minimum height=2em,text width=6.5em,text centered},
+      arr/.style={-latex',line b},
+      line a
+    ]
+     \sffamily
+      \scriptsize
+      \node[box] (start) at (0,0) {Start};
+      \node[box] (some action a) at (2,0) {Some Action};
+      \node[box] (scan host) at (4,0) {Scan host};
+      \node[box] (service a) at (4,-2.33) {Service 1};
+      \node[box] (service b) at (4,-3) {\dots};
+      \node[box] (service n) at (4,-3.66) {Service n};
+      \node[box] (some action b) at (2,-2.33) {Some Action};
+      \node[box] (some action c) at (2,-3.66) {Some Action};
+      \node[box] (goal) at (0,-3) {Goal};
+      \draw[arr] (start) -- ++(-90:0.5) -| (some action a);
+      \draw[arr] (some action a) -- ++(90:0.5) -| (scan host);
+      \draw[arr] (scan host.0) -- ++(0:0.6) |- (service a);
+      \draw[arr] (scan host.0) -- ++(0:0.6) |- (service n);
+      \draw[arr] (scan host.0) -- ++(0:0.6) |- (service b);
+      \draw[arr] (service a) -- ++(90:0.5) -| (some action b);
+      \draw[arr] (service n) -- ++(-90:0.5) -| (some action c);
+      \draw[arr] (some action b) -| (goal);
+      \draw[arr] (some action c) -| (goal);
+    \end{tikzpicture}
+    \caption{Ein \enquote{contingent} Plan mit Verzweigung in jeder
+      \enquote{sensing action}}
+    \label{fig:cff_plan}
+  \end{center}
+\end{figure}
+
+Der Vorteil von \enquote{sensing actions} ist, das wir nicht alles im Voraus
+wissen müssen. Services können sich beispielsweise schnell ändern und
+der Agent hat so die Möglichkeit auf diese Änderung zu reagieren.
+
+
+\subsubsection{Ansatz}
+
+Es wurde eine Plan Domäne in PDDL\footnote{PDDL,
+\url{http://cs-www.cs.yale.edu/homes/dvm/}} erstellt, die die relevanten
+Komponenten eines Netzes modelliert (siehe~\ref{sec_model}).
+
+Bevor ein Angriff ausgeführt wird, modelliert der Nutzer das Netz mit
+den Prädikaten und Typen die von der Domäne bereit gestellt werden.
+
+Nachfolgend wird der Angriff auf das Netz vom Planner geplant. Dazu
+wird einer der obig genannten Planer (ff, cff) verwendet.
+
+Dieser Plan wird nachfolgend in ein \enquote{Action Model} überführt. Ein
+Action Model ist eine Komponente an der die nächste Action im Angriff
+erfragt wird. Actions sind Anweisungen der Form \texttt{scan\_host 192.168.0.1}.
+
+Für klassisches Planen ist die interne Struktur des Plans eine Liste
+von aufeinanderfolgenden Aktionen. Wird die nächste Aktion an der
+Komponente erfragt, wird das nächste Element der Liste zurückgegeben.
+
+Für contingent Planning ist die interne Struktur ein Baum. Nach jeder
+\enquote{sensing action} verzweigt sich dieser. Die Anfrage auf den nächsten
+Host ist also bei einer \enquote{sensing action} abhängig von der Rückgabe
+dieser. Deshalb kann dem \enquote{Action Model} die Rückgabe der Aktion
+mitgeteilt werden, woraufhin sich der Weg an einer Verzweigung ergibt.
+
+		
+\subsubsection{Modellierung}
+\label{sec_model}
+
+Die modellierte Domäne stellt drei Basistypen zur Verfügung. Dies sind:
+		     
+\begin{itemize}
+  \item \texttt{service}: Ein Service der auf einem Host angeboten wird
+  \item \texttt{net}: Ein Subnetz
+  \item \texttt{host}: Ein Asset
+\end{itemize}
+
+Des Weiteren wird noch zwischen zwei Host-Typen unterschieden:
+
+\begin{itemize}
+  \item Server
+  \item Client
+\end{itemize}
+
+Die unterstützen Basis-Prädikate unserer Domäne sind:
+
+\begin{enumerate}
+  \item $\text{on\_host}(\text{host})$
+  \item $\text{in\_subnet}(\text{host})$
+  \item $\text{host\_subnet}(\text{host})$
+  \item $\text{service\_running}(\text{host})$
+  \item $\text{host\_visible}(\text{host}, \text{target})$
+\end{enumerate}
+
+Wie aus den Namen der Prädikate ersichtlich, unterstützt die Domäne
+Lokalisierung des Angreifers (\enquote{Auf welchem Host bin ich?},
+\enquote{In welchem Subnetz bin ich?}), sowie grundlegende Eigenschaften
+eines Hosts wie sichtbare Services und Subnetze. Des Weiteren wird die
+Topologie über Sichtbarkeit zwischen Hosts modelliert.
+                 
+Um Angriffe zu modellieren enthält unsere Domäne die folgenden Prädikate:
+
+\begin{enumerate}
+  \item $\text{exploited}(\text{host})$
+  \item $\text{server\_owned}(\text{net})$
+  \item $\text{webserver\_running}(\text{server})$
+  \item $\text{trap\_in\_subnet}(\text{net})$
+  \item $\text{iframe\_injected}(\text{net})$
+  \item $\text{plumbed}(\text{host})$
+  \item $\text{plum\_in}(\text{net})$
+  \item $\text{powned\_dc}(\text{net})$
+  \item $\text{password\_crackable}(\text{host})$
+  \item $\text{shadow\_reachable}(\text{host})$
+  \item $\text{shadow\_decryptable}(\text{host})$
+  \item $\text{user\_creatable}(\text{host})$
+  \item $\text{admin}(\text{host})$
+  \item $\text{domain\_controller}(\text{host})$
+  \item $\text{virus\_scanner}(\text{host}) $
+  \item $\text{nids}(\text{subnet})$
+\end{enumerate} % Das sind funktionen, daher Matheumgebung.
+		    
+Das wohl wichtigste Prädikat ist an dieser Stelle \enquote{exploited(host)},
+welches angibt, ob ein Host unter der Kontrolle des Angreifers
+ist. Außerdem kann angegeben werden, ob ein Server in einem Netz
+übernommen wurde. Dies kann zur Spezifikation des Ziels dienen. Des
+Weiteren wird IFrame-Injection unterstützt. Dazu ist ein Web-Server
+notwendig. Ist ein IFrame installiert, haben wir eine Falle
+in diesem Netz aufgestellt. Ein weiteres Feature der Domäne ist die
+Möglichkeit, Plumbing zu modellieren. Plumbing ist das Installieren
+einer Hintertür, die das Zurückkehren in ein Netz ermöglicht, ohne
+einen \glos{exploit} ausführen zu müssen. Eine Möglichkeit ist das Passwort
+eines Nutzers herauszufinden oder einen neuen Nutzer anzulegen. Haben
+wir einen \enquote{Domain Controller} übernommen ist es noch einfacher, da wir
+dann zugriff auf alle Hosts in diesem Subnetz haben. Um nicht
+entdeckt zu werden, können Virenscanner auf Hosts und \acrpl{ids} in
+Netzen modelliert werden. Diese Hosts bzw. Netze werden dann umgangen.
+
+Die Aktionen die unsere Domäne zum erreichen des Ziels bereit stellt
+sind die Folgenden:
+
+\begin{description}
+  \item[move\_exploit] Wurde der Host übernommen, kann sich ein Angreifer
+      mit diesem Verbinden.
+  \item[move\_right] Hat der Angreifer Rechte auf dem Host kann er sich mit
+      diesem Verbinden.
+  \item[crack] Befindet sich ein Angreifer auf einem Host und die Passwort
+      Datei ist erreichbar und diese ist Angreifbar, dann kann das Passwort
+      herausgefunden werden.
+  \item[exploit] Ein Host kann erfolgreich angegriffen werden, falls dieser
+      einen Service bereit stellt für den ein \glos{exploit} existiert.
+  \item[scan] Eine \enquote{sensing action} die einen NMap scan abbildet.
+  \item[pwn\_dc] Ist das Passwort eines Domain Controllers angreifbar, dann
+      kann ein gesamtes Subnetz übernommen werden.
+  \item[report\_server] Fügt in die Wissensbasis ein, dass ein Server
+      übernommen wurde.
+  \item[become\_admin] Kann ein Passwort erraten werden oder wenn der Angreifer
+      Nutzer anlegen kann, dann kann er Administrator des Rechners werden.
+  \item[install\_bridge\_head] Der Angreifer kann einen Brückenkopf
+      installieren, falls kein Virenscanner auf dem Host existiert.
+  \item[check\_httpd] Eine \enquote{sensing action} die prüft ob ein Webserver
+      auf einem Host läuft.
+  \item[inject\_iframe] Läuft ein Webserver, kann der Angreifer einen IFrame
+      einfügen.
+\end{description}
+
+Wird klassisches Planen eingesetzt (FF) können die \enquote{sensing actions}
+nicht verwendet werden. Dieses Wissen muss dann auch direkt unter
+Nutzung der Prädikate angeben werden.
+
+\subsubsection{Ein Demo-Plan}
+
+In unserem Demo Plan befindet sich ein Client von dem aus das Netz
+Angegriffen werden soll (s. Abb.~\ref{fig:demo_domain}). Das Netz
+besteht aus sieben Hosts (s. Abb~\ref{fig:demo_domain}, v1--7), sowie drei
+Subnetzen. Des Weiteren ist auf v3 ein Virenscanner installiert und im zweiten
+Subnetz ein \glos{ids}. Der Plan (siehe Listing~\ref{lstplan}) wurde von
+cFF generiert.
+
+
+\begin{figure}
+  \centering \includegraphics[width=0.8\textwidth]{images/demo_domain}
+  \caption{Eine demo Domäne.}
+  \label{fig:demo_domain}
+\end{figure}
+
+\begin{lstlisting}[language={},caption={generierter Plan},label=lstplan]
+  -------------------------------------------------
+    0||0 --- SCAN DKOHL_NOTEBOOK V1 SMTP NET1 
+         --- TRUESON: 1||0 --- FALSESON: 1||1
+  -------------------------------------------------
+    1||0 --- EXPLOIT DKOHL_NOTEBOOK SMTP V1 NET1 
+         --- SON: 2||0
+    1||1 --- SCAN DKOHL_NOTEBOOK V1 APACHE NET1
+         --- TRUESON: 2||1 --- FALSESON: 2||2
+  -------------------------------------------------
+    2||0 --- SCAN V1 V2 APACHE NET1 
+         --- TRUESON: 3||0 --- FALSESON: 3||1
+    2||1 --- EXPLOIT DKOHL_NOTEBOOK APACHE V1 NET1
+         --- SON: 3||2
+    2||2 --- EXPLOIT DKOHL_NOTEBOOK SAMBA V1 NET1 
+         --- SON: 3||3
+  -------------------------------------------------
+    3||0 --- EXPLOIT V1 APACHE V2 NET1 
+         --- SON: 4||0
+    3||1 --- EXPLOIT V1 SAMBA V2 NET1
+         --- SON: 4||1
+    3||2 --- SCAN V1 V2 APACHE NET1 
+         --- TRUESON: 4||2 --- FALSESON: 4||3
+    3||3 --- SCAN V1 V2 APACHE NET1 
+         --- TRUESON: 4||4 --- FALSESON: 4||5
+  -------------------------------------------------
+    4||0 --- SCAN V2 V4 MYSQL NET1 
+         --- TRUESON: 5||0 --- FALSESON: 5||1
+    4||1 --- SCAN V2 V4 MYSQL NET1
+\end{lstlisting}
+
+Im ersten Schritt wird von dem Hacker Client, Host v1 auf \acr{smtp}
+geprüft. Läuft SMTP auf v1 wird dieser angegriffen, ansonsten wird
+geprüft ob Apache läuft. Läuft Apache wird der Host übernommen. Ist
+ein Host übernommen, soll sich der Angreifer auf den übernommenen Host
+bewegen. Dieser SCAN-HACK-MOVE-Zyklus wird wiederholt, bis Host
+v7 übernommen wurde.
+		
+\subsubsection{Performance Evaluierung}
+
+Da der Planer in ein interaktives Tool integriert werden soll, haben
+wir die Geschwindigkeit der Planer evaluiert. In unserem Versuch
+wurden Rechnernetze verschiedener Größen zufällig generiert. Die
+Größe der generierten Netze setzt sich aus Anzahl der Hosts ($n$), der
+Verzweigungsgrad pro Knoten ($b$) und die Anzahl der Services pro Host zusammen.
+Pro generiertem Netz wurde mit jedem Planer geplant und die benötigte
+Zeit gemessen. Dies wurde wiederholt wobei $n,m,b$ pro Iteration
+verdoppelt wurden.
+
+In Abbildung~\ref{fig:planning_result} sieht man, dass der cFF-Planer
+langsam ist. Der Nutzer des Systems muss sich entscheiden, ob er bereit
+ist, alle Services per Hand einzutragen und dafür ein schnelles System
+zu bekommen oder ob er es nicht tut und dafür länger wartet.
+
+\pgfplotsset{every axis legend/.append style={at={(1.03,0.5)},anchor=west}}
+\begin{figure*}
+  \centering
+  \begin{tikzpicture}
+    \sffamily
+    \begin{semilogyaxis}[
+      small,
+      legend style={font=\small\sffamily},
+      xlabel={\small Plan generation step},
+      ylabel={\small $t$ in [s]},
+      width=.8\linewidth,
+      height=6cm,
+      compat=1.3,
+      xmin=0.5,
+      xmax=14.5
+    ]
+      \addplot[color=black,mark=*] table[x=n,y=cFF] {planner-data.table};
+      \addplot[color=black,mark=x] table[x=n,y=FF]  {planner-data.table};
+      \legend{cFF,FF}
+    \end{semilogyaxis}
+  \end{tikzpicture}
+  \caption{Die Ergebnisse des Geschwindigkeitstests mit FF und cFF}
+  \label{fig:planning_result}
+\end{figure*}	
+
+\subsection{Host-Wert-Vorhersage -- Black-Box-Scenario}
+
+In unserem Black-Box-Szenario soll ein adaptives System
+implementiert werden, dass sich an die Präferenzen des Nutzers während
+der Session anpasst. Der Nutzer bewertet nach jedem übernommenen Host
+wie viel Wert der Host für den Nutzer darstellt (auf einer Skala von 0--1).
+
+Da die Entscheidung über den nächsten, anzugreifenden Host meist
+anhand der Services entschieden wird, wird die Präferenz anhand der
+Services gelernt.
+	
+Das nächste Angriffsziel wird anhand der vergangenen Bewertungen
+vorhergesagt.
+	
+\subsubsection{Ansatz}
+
+Die Vorhersage der Präferenz wird von einem künstlichen Neuronalen
+Netz gelernt. Wird ein neuer Host in die \f-Wissensbasis
+eingefügt, wird es mit der NMap-Action Komponente gescannt. Der Agent
+fügt alle \glospl{port} in einen NMap-Vektor $X=(x_1,\ldots,x_n)$ ein, mit
+$x_i\in\{0,1\}$ und $i=\{1,\ldots,n\}$ sowie $n\in\N$. Der
+Index $i$ gibt die \glos{port}-Nummer an, wobei $x_i=0$ einen offenen 
+\glos{port} darstellt und $x_i=1$ einen geschlossenen. Des Weiteren wird die
+Bewertung des Nutzers als Wert $v$ mit dem Vektor verbunden.
+
+Das künstliche neuronale Netz wird initial mit einem Datensatz
+trainiert, in dem jede Instanz ein Tupel der Form $(X,v)$ ist, um für
+einen NMap-Vektor $X$ den Wert $v$ vorherzusagen. Das Training
+findet in 100--300 Iterationen statt. Das Netz besteht aus einer
+Eingabeschicht der Größe des Eingabevektors, $m\in\N$
+\enquote{hidden layers} wobei $m$ ein vom Nutzer gewählter Wert ist, sowie
+einer Ausgabeschicht mit einem Knoten. In der Ausgabeschicht wird die
+Vorhersage des Netzes abgelesen. Standardmäßig ist $m=10$.
+
+Die Implementierung des Netzes nutzt die Ruby Bibliothek
+\texttt{ai4r} \footnote{http://ai4r.rubyforge.org/}.
+
+Während einer Hacking-Session schätzt das Netz den Wert für jeden Host
+und fügt den Host in eine Priority-Queue ein. Der Host mit dem
+höchsten Wert ist der nächste, anzugreifende Host. Die Priority-Queue
+stammt aus Rubys \texttt{algorithms}-Library%
+\footnote{http://www.igvita.com/2009/03/26/ruby-algorithms-sorting-trie-heaps/}.
+Wenn ein Nutzer dem Vorschlag des Netzes widerspricht,
+kann er den geschätzten Wert des Hostes verändern und das Netz wird
+neu trainiert.
+
+\subsubsection{Evaluierung}
+
+In einem Experiment haben wir einen kleinen Datensatz aus NMap-Scans
+gesammelt und jedem NMap-Vektor eine Bewertung gegeben. Die Bewertung
+wurde für verschiedene, mögliche Angriffszenarien unterschiedlich
+vorgenommen.
+
+In unserem ersten Szenario will der Angreifer möglichst viele Server
+unter seine Kontrolle bringen. Deshalb wurden alle Bewertungen der
+Clients in unserem Datensatz auf $0$ gesetzt und alle Server
+Bewertungen auf $1$. Der Fehler in der Vorhersage ist $0.03$. Folglich
+funktioniert die Vorhersage in unserem ersten Szenario. In
+Abbildung~\ref{fig:predictor} werden Clients nahe $0$ vorhergesagt und Server
+nahe $1$.
+
+\begin{figure}
+  \centering
+  \pgfimage[interpolate=true,width=.7\linewidth]{images/PredictorLabled}
+  \caption{Das Netz mapped alle Server ungefähr zu $1$ und alle Clinets ungefähr zu $0$}
+  \label{fig:predictor}
+\end{figure}
+
+In unserem zweiten Szenario ist das Ziel des Angreifers möglichst
+viele Mails zu bekommen. Daher wurden alle Bewertungen von Servern
+auf denen ein \glos{port} zum senden oder empfangen von Mails geöffnet ist
+auf 1 gesetzt und alle anderen auf 0. In diesem Versuch ist der
+Fehler der Vorhersage $0.15$
+
+Im letzten Versuch möchte der Angreifer möglichst viel über die Nutzer
+in seinem Netz erfahren. Daher haben wir in diesem Szenario alle
+Server mit einer Datenbank mit $1$ bewertet, da unsere Annahme ist,
+dass dort Nutzerdaten gespeichert sind. Außerdem wurden alle Clients
+mit $1$ Bewertet, da dort Nutzer ihre Informationen oft hinterlegen.
+Der Fehler in der Vorhersage ist $0.035$
+
+Da die Fehler in der Vorhersage klein sind, denken wir das diese
+Methode sich an verschiedene Nutzerpräferenzen anpassen kann.
+

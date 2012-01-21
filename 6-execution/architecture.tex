@@ -1,0 +1,41 @@
+\section{FIDIUS-Architektur}
+\label{sec:architecture}
+\authors{\LM \and \DE}{}
+
+Das \f-System basiert auf verschiedenen Komponeten die miteinander agieren.
+Das zentrale Element ist der \f-Core, dieser besteht aus den Komponenten
+Knowledge, Decision und Action, eine genaue Erklärung folgt in
+Abschnitt~\ref{sec:core}.
+
+Über \glos{xmlrpc} kann der \f-Core von einer \acr{gui} angesprochen werden
+und Befehle und Anfragen entgegennehmen. Wir verwenden zur Bereitstellung
+der \acr{gui} den C\&C-Server, dies ist eine \glos{rails}-Webanwendung die
+im Abschnitt~\ref{sec:candc} genauer erläutert wird.
+
+Als Angriffskomponente wird auf \acr{msf} zurückgegriffen. Vom \f-Core
+kann mit \acr{drb} auf den MSF-DRb-Daemon zugegriffen werden, der \acr{msf}
+bereitstellt. Sowohl \acr{msf} als auch der MSF-DRb-Daemon werden im
+Abschnitt~\ref{sec:msf_framework} vorgestellt.   
+
+Die EvasionDB dient dazu, \acr{ids}-Events mit durchgeführten Angriffen zu
+korrelieren. Dazu wird die EvasionDB sowohl in der Angriffskomponente, bei
+uns als \acr{msf}, als auch in den überwachenden \acr{siems}, wie dem
+\glos{prelude-ids}, angebunden. Eine Erläuterung der EvasionDB folgt im
+Abschnitt~\ref{sec:evasion-db}.
+
+Die Komponente Snortor wurde zu zwei Zwecken entwickelt. Zum einen
+dient sie dazu alle Exploits, die dem \f-System zur Verfügung stehen
+nacheinander an einen Host zu senden. Zum anderen kann sie eine
+\gls{glos:snort}-Instanz konfigurieren. So kann der Snortor alle Exploits
+senden und über die EvasionDB abfragen, welche Events das Exploit
+zur Folge hatte. Die genaue Funktionsweise ist beschrieben im
+Abschnitt~\ref{snortor}.
+
+Die Architektur des \f-System ist in Abbildung~\ref{fig:core} schematisch dargestellt:
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.6\linewidth]{images/core-architecture}
+  \caption{Schema des \f-Systems}
+  \label{fig:core}
+\end{figure}

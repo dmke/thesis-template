@@ -1,0 +1,78 @@
+\chapter[Referatsausarbeitungen]
+  {Referatsaus-\\arbeitungen}
+\label{chp:compositions}
+
+\section{Motivation}
+
+Wie auch im ersten Projektjahr fand zu Beginn des Wintersemesters ein Projektwochenende
+statt. Darin wurde über den bisherigen Weg reflektiert und der Zukünftige angerissen.
+Für die gemeinsamen Treffen wurde dieses Mal allerdings keine Jugendherberge organisiert.
+Externe Termine auf Seiten der Betreuer und eine mangelnde Bereitschaft auf studentischer
+Seite, Geld und Zeit in weite Anreisen zu investieren führten dazu, dass wir auf dem
+Campus der Universität Bremen verblieben. Das Projektwochenende fand am 17.--19.~Oktober
+2010 statt.
+
+Im Folgenden seien kurz die Referats-Themen aufgelistet, die von der Projektbetreuung im
+Voraus an die Teilnehmer verteilt worden sind. Die Reihenfolge orientiert sich dabei
+an der Vortragsreihenfolge vom Wochenende.
+
+\section{Ablauf}
+
+\paragraph*{Freitag, 17.10.2010}
+
+\begin{tabbing}
+  ================== \= ====================================== \= \kill
+  \LM:  \> \ref{compositions:cert-cve} CERT \& CVE                              \> S.~\pageref{compositions:cert-cve}\\
+  \AB:  \> \ref{sec:compositions:netflow-basics} NetFlow \& IPFIX -- Grundlagen \> S.~\pageref{sec:compositions:netflow-basics} \\
+  \KUH: \> \ref{compositions:netflow-security} NetFlow \& IPFIX -- Sicherheit   \> S.~\pageref{compositions:netflow-security} \\
+\end{tabbing}
+
+\paragraph*{Samstag, 18.10.2010}
+
+\begin{tabbing}
+  ================== \= ====================================== \= \kill
+  \DH: \> \ref{compositions:botnetze} Botnetze                                \> S.~\pageref{compositions:botnetze} \\
+  \MW: \> \ref{compositions:honeynets} Honeypots                              \> S.~\pageref{compositions:honeynets} \\
+  \JF: \> \ref{compositions:openvas} OpenVAS                                  \> S.~\pageref{compositions:openvas} \\
+  \BK: \> \ref{sec:comp:nse} NMap Scripting Engine                            \> S.~\pageref{sec:comp:nse} \\
+  \DE: \> \ref{compositions:msf} Wie und wofür können wir Metasploit nutzen?  \> S.~\pageref{compositions:msf} \\
+  \HM: \> \ref{compositions:meterpreter} Metasploits Meterpreter              \> S.~\pageref{compositions:meterpreter} \\
+\end{tabbing}
+
+\paragraph*{Sonntag, 19.10.2010}
+
+\begin{tabbing}
+  ================== \= ====================================== \= \kill
+  \WF: \> \ref{compositions:wuermer} Würmer                   \> S.~\pageref{compositions:wuermer} \\
+  \DM: \> \ref{compositions:stuxnet} Stuxnet                  \> S.~\pageref{compositions:stuxnet} \\
+  \CA: \> \ref{composition:tunnel} Tunnel -- Hole-Punching    \> S.~\pageref{composition:tunnel} \\
+  \DK: \> \ref{sec:compositions:timeanalysis} Zeitreihen      \> S.~\pageref{sec:compositions:timeanalysis} \\
+\end{tabbing}
+
+
+
+% 
+% datei anlegen und verlinken
+% 
+% bitte keine nummerierung im dateinamen verwenden. die sind redundant, und (wie
+% an den hier gelisteten beispielen erkennbar) fehleranfällig.
+% 
+
+% Freitag
+\input{A-compositions/1_cert_cve.tex} % LM: CVE-Nummern
+\clearpage\input{A-compositions/netflow_ipfix_basics.tex} % AB
+\clearpage\input{A-compositions/netflow_ipfix_security.tex} % KUH: Netflow Security
+
+% Samstag
+\clearpage\input{A-compositions/botnetze.tex} % DH: Botnetze
+\clearpage\input{A-compositions/2_honeynets.tex} % MW: Honeypots
+\clearpage\input{A-compositions/6_openvas.tex} % JF
+\clearpage\input{A-compositions/nse.tex} % BK: NMap
+\clearpage\input{A-compositions/9_metasploit_framework.tex} % DE
+\clearpage\input{A-compositions/10_meterpreter.tex} % HM
+
+% Sonntag
+\clearpage\input{A-compositions/11_wuermer.tex} % WF
+\clearpage\input{A-compositions/stuxnet.tex} % DM
+\clearpage\input{A-compositions/tunnel.tex} % CA: Tunnel
+\clearpage\input{A-compositions/zeitreihen.tex} % DK: Algorithmen

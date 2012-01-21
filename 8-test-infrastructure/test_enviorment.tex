@@ -1,0 +1,154 @@
+\section{Testlandschaft}
+\label{sec:test_environment}
+\authors{\CA}{\LM \and \MW \and \JF \and \DH}
+
+Das Projekt \f hat auch im zweiten Jahr einen Bedarf an 
+einer kontrollierbaren Testumgebung, in der verschiedene 
+Hosts zu jeder Zeit verfügbar sind, um Schwachstellen
+ausnutzen zu können. Obgleich der neuen Ausrichtung
+(Abschnitt~\ref{sec:motivation:change}), konnte die während des ersten
+Projektjahres entstandene Testlandschaft, weiter genutzt werden.
+
+Bereits aufgesetzte und fertig konfigurierte virtuelle Rechner 
+innerhalb der Testlandschaft, wie das \glos{snort}-\acr{ids}
+oder der \acr{vpn}-Rechner finden ebenso ihre
+Notwendigkeit, wie die bereits installierten Betriebssysteme,
+welche weiterhin als Angriffsziele dienen.
+
+Insgesamt befinden sich folgende Rechner in der Testlandschaft:
+
+\begin{center}
+  \begin{longtable}{ll}
+    \rowcolor{Beige}
+      Host mit Betriebssystem & Einsatzzweck
+    \endhead
+      \caption[Übersicht Betriebssysteme]{\\\tabelletbcname}
+    \endfoot
+      \caption{Übersicht Betriebssysteme\label{tab:test_environment:bs}}
+    \endlastfoot
+    Debian Linux 1                 & Angriffsziel \\ 
+    Debian Linux 2                 & Angriffsziel \\
+    Debian Linux 3                 & Angriffsziel \\
+    Debian Linux 4                 & Angriffsziel \\
+    Windows XP SP2                 & Angriffsziel \\
+    Ubuntu Linux                   & Angriffsziel \\
+    Metasploitable (Ubuntu)        & Angriffsziel \\
+    VPN (Debian Linux)             & Administration \\
+    Annoguru  (Debian Linux)       & Administration \\
+    Prelude-Manager (Debian Linux) & Administration \\
+    Snort (Debian Linux)           & Administration \\ 
+  \end{longtable}
+\end{center}
+
+Im Vergleich zum Vorjahr diese kontrollierbare Umgebung, welche im
+ersten Projektjahr durch Unterstützung der Virtualisierungssoftware
+\glos{virtualbox} umgesetzt und erzeugt wurde, um zusätzliche
+Angriffsziele erweitert. Da der Fokus der Ausnutzung von
+Schwachstellen bisher eher auf Windows-basierten Hosts lag, wurde
+dieser im zweiten Projektjahr auf unixoide Betriebssysteme ausgedehnt.
+
+Insgesamt sollten möglichst viele und heterogene Betriebsysteme für
+das \f-System bereitgestellt werden, so dass ebenso viele und
+unterschiedliche Angriffsmuster erzeugt werden können. Vor dem
+Hintergrund, dass das zwischengeschaltete \glos{ids} in Verbindung mit
+der EvasionDB (\ref{sec:idsevasion:evasiondb}) und dem \glos{rubygem}
+Snortor (\ref{snortor}) auf des somit erzeugten Netzverkehrs arbeiten
+kann.
+
+In diesem Zusammenhang ist es von Vorteil, eine möglichst breite
+Palette an unterschiedlichen Dienstprotokollen (\acr{http}, \acr{ftp},
+\acr{smb}, \acr{imap}, \acr{pop3}, \acr{smtp} etc.) zur Verfügung zu
+stellen, um so mehrere Angriffsszenarien durchspielen zu
+können. Dieses Vorhaben ist immer vor dem Hintergrund der Untersuchung
+der erzeugten Events durch das \acr{ids}-\glos{snort} pro
+\glos{exploit} oder Ausnutzung einer Schwachstelle, zu
+sehen.
+
+Zusätzlich zur bestehenden Testlandschaft, konnte durch die engere
+Zusammenarbeit mit dem Projekt \acr{fides} eine weitere Tetslandschaft
+hinzugewonnen werden. Das \acr{fides}-Projekt verwaltet eine eigene,
+mit der Unterstützung der T-Systems betriebene Testumgebung, welche
+auf \glos{qemu} aufgebaut wurde.
+
+Die Abbildung~\ref{sec:test_environment:fig:fides} zeigt dabei die
+zwei möglichen Zugangspunkte für das \f-Projekt in Form des
+\enquote{Angreifers} über die jeweils anders gerouteten
+\acr{vpn}-Verbindungen. Dabei wird zwischen dem Weg über das Netz der
+T-Systems und dem des \acr{tzi}, welches von dem \f-Projekt genutzt
+wurde, unterschieden. Somit ist je nach Einwahl bestimmbar, ob die bei
+einer Ausnutzung einer Schwachstelle erzeugten Datenpakete nur von dem
+\acr{ids} des \acr{tzi} oder zusätzlich durch das der
+T-Systems erfasst werden. Die rot markierte Kante verdeutlicht dabei den
+ausschliesslich vom \f-Projekt genutzten Angriffsweg.
+
+\begin{figure}
+	\centering
+  \pgfimage[interpolate=true,width=.8\linewidth]{images/sandbox}
+	\caption{FIDeS Testlandschaft}
+  \label{sec:test_environment:fig:fides}
+\end{figure}
+
+Wie auch die eigene Testlandschaft, beinhaltet die mittels \glos{qemu}
+realisierte Testlandschaft ein \glos{ids} auf der Basis von
+\glos{snort}, sodass Angriffe entsprechend erkannt und protokolliert
+werden können. Als sehr positiv hat sich die Verwendung der Software
+\glos{ovs} herausgestellt. Die eigene Testlandschaft hatte immer
+wieder Probleme damit, Angriffe innerhalb eines Subnetzes zu erkennen,
+wenn diese nicht über das \acr{ids} geroutet wurden. Dieses Szenario
+entstand genau dann, wenn ein Angriff von einem eigentlichen
+Angriffsziel zu einem anderen Angriffsziel durchgeführt wurde, ohne
+den Weg über den \glos{snort}-Rechner bei gesetztem \glos{promisc} zu
+gehen. Angebunden an den virtuellen Switch waren wiederum Gastsysteme
+mit ausnutzbaren Schwachstellen. So wurden die Angriffsziele um diese
+Hosts erweitert:
+
+\begin{enumerate}
+  \item Windows XP SP 0
+  \item Windows XP SP 1
+  \item Windows 2003 Server SP 0
+  \item Windows 2003 Server SP 1
+  \item Ubuntu Metasploitable
+\end{enumerate}
+
+Die Hosts wurden mit mehreren Diensten ausgestattet, welche explizite
+Verwundbarkeiten aufwiesen. Zudem wurden innerhalb der Testlandschaft
+mehrere Subnetze eingerichtet, um so Pivoting-Mechanismen
+(Abschnit~\ref{sec:pivoting}) ausüben zu können.
+
+Die Administration der Gastsysteme ist dabei jedoch nicht vergleichbar
+mit der durch \glos{virtualbox} betriebenen Hosts. Die komplexeren
+Anweisungen (Abschnitt~\ref{sec:test_environment:lst:qemu}) allein
+zum Starten und Stoppen von Betriebssystemen innerhalb der
+Testlandschaft führten dazu, dass zunächst einfache Scripte
+angefertigt wurden, die dies erledigten, bis schliesslich zur
+automatischen Kontrolle durch erweiterte Plugins~\ref{lab} (siehe auch
+\ref{sec:test_vm_control}).
+
+\begin{lstlisting}[caption={Qemu Anweisung zum Starten eines Images},label=sec:test_environment:lst:qemu]
+  /usr/bin/sudo /usr/libexec/qemu-kvm -net
+  nic,model=ne2k_pci,macaddr=52:54:00:01:05:04 -net
+  socket,mcast=230.0.0.1:1234 -net
+  nic,model=ne2k_pci,macaddr=52:54:00:01:15:04 -net
+  tap,script=/opt/virr/nic_scripts/ifup.sh,downscript=/opt/virr/nic_scripts/ifdown.sh
+  -vnc 127.0.0.1:0 -daemonize /home/machines/imgs/winXP_sp2/winxp2.img
+\end{lstlisting}
+
+Für jedes Gastsystem wurde neben dem laufenden Image ein
+\glos{overlay} erzeugt, welches das unversehrte, originale Image des
+Betriebsystems enthält. Somit konnte auch bei totalem Ausfall eines
+Hosts immer ein Wiederherstellungspunkt reaktiviert werden.
+
+Insgesamt diente die sehr robust laufende Testlandschaft des
+\acr{fides}-Projekts als ein weiterer Angriffspunkt für das
+\f-System. Hervorzuheben sind der Einsatz des virtuellen Switches,
+welcher Probleme, wie sie in der \f-Testlandschaft entstanden
+waren, gar nicht erst entstehen ließ - So die Angriffe zwischen
+Gastsystemen, welche nicht bemerkt wurden, oder die Möglickeit zum
+Pivoting~\ref{sec:pivoting}. Leider sollte es sich jedoch als
+schwierig herausstellen, auf die erkannten Events und damit erzeugten
+Protokollierungen des \glos{snort}-Rechners Zugriff zu erhalten. Da
+dieser Zugriff jedoch als essentiell in Hinblick auf die
+Auswertungskomponenten des \f-Systems, wie Snortor und EvasionDB,
+zu betrachten ist, war die Verwendung der \acr{fides}-Testlandschaft eher
+für die Erprobung neuer \glospl{exploit} interessant.
+

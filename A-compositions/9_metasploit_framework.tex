@@ -1,0 +1,358 @@
+\section{Wie und wofür können wir Metasploit nutzen?}
+\label{compositions:msf}
+
+Das \acr{msf} stellt ein Rahmenwerk zur Verfügung, so dass
+sich Entwickler von Exploits auf den Kern der Entwicklung des Exploits
+konzentrieren können. Hierfür stellt es verschiedene APIs zur Verfügung,
+um z.B. mit einem SMB-Server zu kommunizieren.
+Die so entwickelten Exploits stehen jedem Nutzer des \acr{msf} zur
+Verfügung, so dass alle Exploits auf jeden Host angewendet werden
+können. 
+Auch für Exploits notwendige Payloads werden in verschiedenen
+Varianten zur Verfügung gestellt. Alle Payloads sind, sofern
+notwendig und sinnvoll, konfigurierbar und damit auf alle Bedürfnisse
+anpassbar. So kann man bei einem Payload, das eine Shell auf dem remote
+Host öffnet, einstellen, auf welchem Port diese Shell gestartet werden
+soll. 
+Das MSF bietet für jeden Sicherheitsexperten einen guten Rahmen, der
+Es einem Sicherheitsexperten ermöglich die Sicherheit eines Netztes zu
+überprüfen.
+
+\subsection{Unsere Ziele}
+
+Das Projekt FIDIUS hat zum zweiten Jahr hin sein Ziel geändert. Es ist
+nun unser Ziel \gls{glos:ids} zu testen. Hierzu möchten wir
+ein Programm entwickeln, dass automatisch versucht ein Netz zu
+explorieren und die Schwachstellen der gefundenen Hosts
+ausnutzt. Dieses Vorgehen soll protokolliert werden. So kann
+vergleichen, was in einem Netz passiert ist und was davon verschiedene
+\gls{glos:ids} erkannt haben.
+
+\subsection{Was müssen wir können}
+
+Um das Ziel verschiedene \gls{glos:ids} zu testen müssen wir
+vornehmlich 5 Dinge können.
+\begin{enumerate}
+  \item Netze explorieren
+  \item Versionen von auf Hosts installierten Diensten erkennen
+  \item Sicherheitslücken der Dienste kennen oder herausfinden
+  \item Exploits zu diesen Lücken finden und ausnutzen um die Kontrolle
+    über einen Host zu übernehmen
+  \item einen Host als Sprungbrett in andere Netze nutzen
+\end{enumerate}
+
+Diese 5 Teil-Ziele werden zum Großteil bereits von OpenSource-Tools
+erreicht.
+So kann \acr{nmap} bereits Netze explorieren und Versionen
+von in einem Netz verfügbaren Dienste erkennen. \gls{glos:openvas}
+kann Sicherheitslücken von Diensten nennen und die dazu gehörigen
+CVE-Nummern anzeigen.
+Exploits anwenden, um so die Kontrolle über einen Host zu erlangen
+kann das \acr{msf} bereits semiautomatisch.
+
+Das Benutzen eines Hosts als Sprungbrett in noch unbekannte Netze ist
+ebenfalls bereits umgesetzt worden. Jeder Wurm besitzt diese
+Fähigkeit.
+
+\subsection{Was ist zu tun}
+
+Die o.g. Programme können bereits einen Großteil von dem, was wir
+können möchte. Dort wurden bereits wichtige Teilschritte unseres
+Vorhabens umgesetzt. Es fehlen die Verbindungen zwischen den
+Komponenten. Neben den \acr{api}s für Programme wie
+\gls{acr:nmap}, \gls{glos:openvas} und \acr{msf} fehlt auch eine
+zentrale Einheit, die das Zusammenspiel der Komponenten steuert und
+das weitere Vorgehen (intelligent) plant.
+Da das \acr{msf} zum einen sehr umfangreich ist und zum anderen
+sehr viel, für unser Projekt besonders wichtige, Funktionalität
+mitbringt, ist es vor allem zu Beginn wichtig, dass die Teilnehmer des
+Projektes ein Verständnis für die Mächtigekeit und den Funktionsumfang
+des \gls{acr:msf} entwickeln. 
+
+\subsection{Was ist das Metasploit Framework}
+
+Das \gls{acr:msf} ist wie eingangs erwähnt ein Framework, dass einen
+Entwickler bei der Entwicklung von Exploits und anderen
+Sicherheitsrelevanten Programmen unterstützt. Es besteht im
+Wesentlichen aus drei Teilen:
+
+\begin{enumerate}
+  \item Ruby Extension Library (REX)\\
+    Die REX Library ist eine Library, die darauf ausgelegt ist mit der
+    Basis-Installation von Ruby zu funktionieren. Es sollen keine
+    weiteren Gems oder Libraries zur Lauffähigkeit von Nöten sein. 
+    Die REX Library beinhaltet vor allem 
+    \begin{itemize}
+      \item Wrapper für Sockets
+      \item Implementierungen von Protokollen, z.B. SMB, FTP, HTTP
+        etc.
+      \item Das vom \acr{msf} genutzte Logging-Framework
+      \item Utility-Klassen für Exploits 
+      \item Diverse Helper Klassen
+    \end{itemize}
+  \item MSF-Core\\
+    Das MSF-Core bildet den inneren Kern des Frameworks. Es stellt
+    Interface-Klassen für alle Module bereit. Auch sind hier
+    Manager-Klassen für die Verwaltung von Modulen, Sessions etc. abgelegt
+  \item MSF-Base\\
+    MSF-Base dient der Abstraktion vom MSF-Core. Es simplifiziert das
+    API von MSF-Core und stellt zusätzliche Funktionen bereit. 
+\end{enumerate}
+
+Diese drei Teile stellen das Framework dar. Sie enthalten jedoch weder
+Exploits noch Payloads. Diese sind in Modulen unterschieden die
+seperat abgelegt sind.
+
+\subsubsection{Module}
+
+Module sind Klassen, die das Framework nutzen und vom Framework
+benutzt werden. Es werden fünf verschiedene Module unterschieden. 
+
+\begin{enumerate}
+  \item Exploits\\
+    Um eine Sicherheitslücke auszunutzen, benötigt man ein Programm,
+    dass eine Schwachstelle eines anderen Programmes ausnutzt. Diese
+    Programme heißen Exploits. 
+  \item Payloads\\
+    Nachdem man eine Sicherheitslücke ausgenutzt hat, muss ein
+    weiteres Programm gestartet werden, dass einem Zugriff auf das
+    System gewährt oder weiteren Code nachlädt, um das angegriffene
+    System unter seine Kontrolle zu bringen. Diese Programme heißen
+    Payloads.  
+  \item Encoders\\
+    Programme müssen auf verschiedenen Rechner-Architekturen den
+    Prozessor unterschiedlich ansprechen. Damit ein Programm auf
+    nahezu jeder Architektur ausführbar ist, müssen sie enkodiert
+    werden. Diese Aufgabe übernehmen Encoder.
+  \item Nops\\
+    Ein Prozessor beendet die Verarbeitung eines Befehles,
+    sobald ein \emph{\\0} darin vorkommt. Daher muss ein
+    für die Zielplattform geeigneter Ersatz genutzt werden, trotz des
+    notwendigen Zeichens \emph{\\0} keinen Abbruch der Verarbeitung
+    des eigenen Programmes zu erreichen. Dies sind die Nops. Sie
+    führen keine Operation durch (No Operations) 
+  \item Auxiliaries\\
+    Es gibt Programme, die die Sicherheit anderer Programme testen,
+    ohne sie direkt zu beeinflussen. Ein Programm könnte z.B. den
+    Netzverkehr mithöhren und Passwörter, die unverschlüsselt über das
+    Netz gesendet werden, mitschneiden. Ein solchen Programm ist kein
+    Exploit im eigentlichen Sinne, wie er oben beschrieben worden
+    ist. Dennoch erfüllt ein solches Programm eine ähnliche
+    Funktion. Solche Programme werden Auxiliaries (Aux) genannt. 
+\end{enumerate}
+
+Metasploit unterscheidet Module nach diesen fünf Typen.
+
+\subsubsection{Unterscheidung von Payloads}
+\label{compositions:msf:payloads}
+Die Payloads untereinander lassen sich in weitere Gruppen
+unterteilen. 
+
+Die erste Gruppe der Payloads sind die sog. \emph{Singles}. Sie führen
+genau eine Aktion aus. So wird durch ihre Ausführung z.B. ein neuer
+Benutzer dem System hinzugefügt oder eine bestimmte Datei ausführt. 
+Die zweite Gruppe sind die \emph{Stagers}. Sie dienen als Wegbereiter
+für größere Programme. \emph{Stagers} Laden in der Regel weiteren Code
+nach, da der Code, den man einem Exploit mit auf den Weg geben kann
+meist eine bestimmte Größe nicht übersteigen darf. 
+\emph{Stages} bilden die dritte Gruppe der Payloads. Sie werden durch
+\emph{Stagers} nachgeladen und installiert. 
+
+\subsubsection{Ordnung im Dateisystem}
+
+Um eine gewisse Übersichtlichkeit zu bewahren hat das \acr{msf}
+eine Struktur im Datei-System, die im Folgenden kurz erläutert
+wird. Die u.g. Pfade sind relativ zum Installationsverzeichnis.
+
+\begin{itemize}
+  \item lib\\
+    Hier befindet sich das Framework selbst. Unter anderem die
+    REX-Library und der Code des MSF-Core und MSF-Base.
+  \item data\\
+    In diesem Verzeichnis werden Dateien abgelegt, die der Benutzer an
+    seine Bedürfnisse anpassen soll. Z.B. Wörterbüchcher zum Erraten
+    von Login-Daten. 
+  \item tools\\
+    Im Ordner Tools sind verschiedene Hilfsprogramme zu finden. So
+    z.B. eines, das exe-Dateien in VBS-Dateien umwandelt
+  \item modules\\
+    Dieser Ordner beinhaltet, wie der Name schon andeutet, alle
+    Module. Also alle Exploits, Payloads etc. 
+  \item plugins\\
+    Plugins sind z.B. Klassen, die die Anbindung an eine Datenbank
+    abstrahieren. Sie werden in diesem Ordner abgelegt.
+  \item scripts\\
+    Im Verzeichnis Scripts befindet sich unter anderem ein Teil des
+    Meterpreters. 
+  \item external\\
+    Hier können Programme von Drittanbietern abgelegt werden.
+\end{itemize}
+
+Neben den o.g. Ordnern befinden sich im root-Verzeichnis der
+\gls{acr:msf}-Installation noch ein Ordner mit Tests und ein weiterer
+mit Dokumentation. Zusätzlich lassen sich noch diverse Binärdateien
+finden, deren Beschreibung über den Rahmen dieser Ausarbeitung hinaus
+geht. 
+
+\subsubsection{Module im Dateisystem}
+
+Die Module des \acr{msf} sind in einem eigenen Ordner abgelegt und
+nach ihrer Funktion aufgeteilt. So befinden sich alle Payloads, alle
+Exploits etc. in eigenen Ordnern. 
+
+Innerhalb eines jeden Ordners für jeden Modul-Typ befindet sich eine
+weitere Ebene, die die Exploits, Nops etc nach z.B. Betriebssystem
+oder Architektur-Typ unterscheidet.
+
+Für eigene Module ist der Ordner \emph{.msf} im Homeverzeichnis
+vorgesehen. Module die hier abgelegt werden, werden beim Laden des
+\acr{msf} berücksichtig. 
+
+\subsection{APIs des MSF}
+
+Das \acr{msf} bietet verschiedene \glspl{acr:api}. Je nach Ziel ist
+aufgrund der etwas unterschiedlichen Funktionalität ein anderes
+\gls{acr:api} geeignet.
+
+Im Folgenden werde ich vier Methoden vorstellen, mit denen man das \acr{msf}
+anzusprechen kann. Hierbei werde ich auf die Vor- und Nachteile
+eingehen und die Verwendbarkeit des \acr{api} für FIDIUS besprechen.
+
+\subsubsection{RPC}
+
+Im Root-Verzeichnis der \acr{msf}-Installation befinden sich die
+beiden Dateien \emph{msfrpc} und \emph{msfrpcd}. Sie starten den
+RPC-Client bzw. den RPC-Daemon. 
+Über RPCs lassen sich diverse Funktionen des \acr{msf} nutzen. 
+Jedoch müssten wir entweder den RPC-Client erweitern oder über die
+Ausführung der Binärdatei nutzen. 
+
+Nachteile:
+\begin{itemize}
+  \item kein Zugriff auf volle Funktionalität des \acr{msf}. 
+  \item Anfällig für MITM-Angriffe
+\end{itemize}
+
+Vorteile: 
+\begin{itemize}
+  \item über Rechnernetze nutzbar
+  \item einfache, klare Schnittstelle
+\end{itemize}
+
+Als wesentlicher Nachteil ist hier zu nennen, dass der Zugriff auf die
+Funktionalität des \acr{msf} beschränkt ist, so dass zur Beurteilung
+der Verwendbarkeit dieser \acr{api} die Analyse des genauen
+Funktionsumfanges notwendig wäre.
+
+\subsubsection{msfcli}
+
+Die ausfühbare Datei \emph{msfcli} im Root-Verzeichnis der
+\acr{msf}-Installation erwartet als Parameter ein Exploit und die für
+die Ausführung des Exploits notwendigen Parameter folgend.
+Auch hier müsste, damit wir im Projekt FIDIUS diese API nutzen können,
+die binäre Datei angesprochen werden. 
+
+Nachteile:
+\begin{itemize}
+  \item keine Suche von Exploits möglich 
+  \item keine Abfrage der notwendigen Parameter möglich
+  \item nicht über Rechnernetze nutzbar
+\end{itemize}
+
+Vorteile: 
+\begin{itemize}
+  \item klare, unkomplizierte Schnittstelle
+\end{itemize}
+
+Sollten wir \emph{msfcli} als Schnittstelle zum \acr{msf} nutzen, so
+würden wir Probleme erneut lösen müssen, die im \acr{msf} bereits
+gelöst sind. Über den \emph{msfcli} können wir z.B. keine Suche nach
+Exploits durchfürhen oder Exploits nach bestimmten Kriterien auswählen.
+
+\subsubsection{RC-Scripte}
+
+RC-Scripte sind Dateien in denen die Befehle, die das \acr{msf} ausführen
+soll nacheinander auflistet sind. Durch Tags (<ruby> und </ruby>)
+lässt sich Ruby-Code einbetten. 
+Stöße man jedoch über ein RC-Script eine Suche nach einem Expoit an,
+so müsste man das Ergebnis parsieren und darauf erneut ein RC-Script
+erzeugen. Dies bedeutete, dass das Framework mehrfach geladen werden
+müsste. Da beim Laden des Frameworks unter anderen alle Dateien im
+Verzeichnis modules/ eingelesen, parsiert und in den Arbeitsspeicher
+geladen werden, ist dieser Vorgang sehr aufwändig und benötigt im
+Verhältnis zu anderen Operationen des Frameworks sehr große Zeit.
+
+Nachteile:
+\begin{itemize}
+  \item Ergebnisse müssten parsiert werden und neue RC-Scripte 
+  \item evtl. mehrfaches Laden des Frameworks notwendig. 
+\end{itemize}
+
+Vorteile: 
+\begin{itemize}
+  \item mögliche Einbettung von Ruby-Code
+\end{itemize}
+
+Das \acr{msf} löst viele Probleme, denen wir uns gegenüber gestellt
+sehen. Wir müssten, um diese Schnittstelle zum \acr{msf} zu nutzen,
+sehr komplexe RC-Files schreiben. Diese zu entwickeln und auch zu
+pflegen scheint ein großer Aufwand zu sein. Daher kommt auch diese
+Schnittselle tendenziell nicht in Frage.
+
+\subsubsection{Ruby}
+
+Das \acr{msf} erlaubt dem Benutzer, durch das Einbinden der
+entsprechenden Dateien, das Framework direkt aus Ruby-Code zu laden
+und zu benutzen. 
+Durch den folgenden Code z.B. lassen sich alle im \acr{msf} befindlichen
+Module auflisten:
+
+\begin{verbatim}
+  $:.unshift(PATH\_TO\_MSF\_LIB)
+  require "msf/base"
+
+  f = Msf::Simple::Framework.create
+
+  f.modules.each_modules do |name, module|
+    puts name
+  end
+\end{verbatim}
+
+Zum Durchlaufen aller im Framework verfügbares Exploits muss man nur
+f.exploits.each do |e| puts e.fullname end schreiben. 
+Auch zum Ausführen von Exploits, dem Suchen nach Payloads und dem
+Setzen aller notwendigen Optionen gibt es genügend Dokumentation.
+
+Nachteile:
+\begin{itemize}
+  \item tiefer Einstieg in den Quellcode des \acr{msf} notwendig
+  \item nicht ohne Erweiterungen über Rechnernetze nutzbar
+\end{itemize}
+
+Vorteile: 
+\begin{itemize}
+  \item Verfügbarkeit des gesamten Frameworks
+  \item Community, die Erweiterungen evtl. übernimmt und weiter pflegt.
+\end{itemize}
+
+Die direkte Ansprche des \acr{msf} über Ruby scheint bei dem großen Umfang
+der Funktionalität, die wir vom \acr{msf} nutzen möchten der
+geeignetste Weg zu sein. Trotz der Notwendigkeit der Entwicklung eines
+Verständnisses des Quellcodes des \acr{msf}.
+
+\subsection{Ausblick}
+
+Für unser Vorhaben müssen wir Zugriff auf alle Funktionen des
+\acr{msf} haben. Hierzu ist der Zugriff direkt über Ruby am besten
+geeignet, da wir so auch die Funktionen des \acr{msf} die wir benutzen
+wollen an unsere Bedürfniss anpassen können. 
+Z.B. ist das automatisierte Angreifen von allen Hosts in einem
+bestimmten Netz nicht besonders ausgereift. So werden immer alle
+Hosts, die in der Datenbank erfasst sind angegriffen und nicht nur ein
+bestimmtes Subnet. Auch werden für jeden Hosts alle Exploits in
+zufälliger Reihenfolge verwendet. Dies könnte man optimieren, in dem
+man im Quellcode des Frameworks die entsprechenden Stellen im Code
+optimiert und anpasst. Darüber hinaus schränkten die anderen Optionen
+unsere Möglichkeiten im Arbeiten mit dem \acr{msf} ein. Nur durch die
+direkte Verwendung der vom \acr{msf} bereitgestellen Libraries steht
+uns der volle Funktionsumfang des Frameworks zur Verfügung.

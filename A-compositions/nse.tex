@@ -1,0 +1,181 @@
+\section{NMap Scripting Engine}
+\label{sec:comp:nse}
+
+Ausarbeitung des Referats vom Projektwochenende. Vortragende: Bernhard
+Katzmarski
+
+\subsection{Benutzung} Die Nmap-Scripting-Engine (NSE), die seit
+Version 4.21 in Nmap integriert ist [1], sorgt dafür, dass sich die
+Funktionalität von Nmap durch Scripts erweitern lässt. Zum Zeitpunkt
+der Erstellung dieses Textes kommt Nmap mit ca. 80 vorinstallierten
+Scripts und insgesamt 153 stehen auf der Entwicklerhomepage zum
+Herunterladen bereit[2].
+
+Nmap-Scripts sind in der Skriptsprache LUA geschrieben. Bei LUA
+handelt es sich um eine objektorientierte, Perl-ähnliche Sprache.  Das
+bemerkenswerte an LUA ist die Größe des Interpreters, der nur 120 KB
+groß ist.
+
+Gängige Nmap-Scripts werden über das Argument -sC gestartet oder
+gezielt mit dem Argument --script ausgeführt, das sich auf mehrere
+Arten nutzen lässt. Man kann Dateinamen, Verzeichnis oder
+Script-Kategorie angeben und die Scripts wählen die ausgeführt werden
+sollen. Manche Scripts erwarten Parameter. Diese lassen sich mit dem
+Argument --script-args setzen. Mehrere Parameter werden durch Komma
+getrennt.
+
+\subsection{Kategorien}
+
+Scripts werden in Kategorien eingeteilt.
+
+\begin{tabelle}{.5,.5}{Hochverfügbarkeitsklassen}{tab:comp:nse}
+       \hline
+         auth & Ermitteln von Authentisierungs-Credentials (z.B. Bruteforce) \\
+       \hline
+         default & Standard-Skripte, die beim Aufruf von -sC ausgeführt werden \\
+       \hline
+         discovery & Auswertung zugänglicher Dienste (z.B. Titel eines HTML-Dokuments oder SNMP-Einträge) \\
+       \hline
+         external & Skripte, die zwecks Weiterverarbeitung Daten an externe Dienste schicken (z.B. whois) \\
+       \hline
+         intrusive & Intrusive Skripte, die das Zielsystem (negativ) beeinträchtigen könnten (z.B. hohe CPU-Auslastung) \\
+        \hline
+          malware & Überprüfung der Infektion von Malware (Viren und Würmer) \\
+        \hline
+          safe & Defensive Skripte, die keine intrusiven und destriktiven Zugriffe durchführen \\
+        \hline
+          version & Erweiterung zum Fingerprinting mit dem Schalter -sV \\
+        \hline
+          vuln & Identifikation spezifischer Verwundbarkeiten (ähnlich einem Vulnerability Scanner) \\
+        \hline
+\end{tabelle}
+Quelle: http://www.scip.ch/?labs.20100507
+
+\subsection{Aufbau von NSE-Scripts}
+
+ NSE-Scripts können in derivative und nicht-derivative Scripts geteilt
+werden. Derivative Scripts benutzen nur bereits bestehende Information
+von Nmap und bereiten diese auf.  Nicht-derivative führen zusätzliche
+Netzzugriffe durch, um bestehende Informationen zu verifizieren, oder
+neue zu gewinnen.
+
+\subsubsection{Head} Im Head werden allgemeine Informationen über das
+Script abgelegt.
+
+\begin{lstlisting}[language={}]
+  description = [[ Dieses minimale Skript identifiziert Webdienste ]]
+  author = "Marc Ruef"
+  license = "(c) 2010 by scip AG"
+  categories = {"default", "safe"}
+\end{lstlisting}
+
+\subsubsection{Rules} Die Rules des Scripts entscheiden darüber, ob
+ein Script ausgeführt wird oder nicht. Selbst, wenn das Script
+explizit über --script ausgewählt wurde, muss auch die
+Ausführungsregel gelten. Es muss mindestens eine der folgenden Regeln
+vom Script überschrieben werden:
+
+\begin{lstlisting}[language={}]
+  prerule() 
+  hostrule(host)
+  portrule(host, port)
+  postrule()
+\end{lstlisting}
+  
+Am gängisten sind die Portrules. Die meisten Scripts entscheiden
+anhand des Ports ob sie ausgeführt werden.
+
+
+\subsubsection{Action} Die Action ist der Einstiegspunkt in das
+Script. Von dort aus lässt sich das Script beliebig programmieren.
+
+\subsection{Beispiele}
+
+\begin{lstlisting}[language={}]
+nmap -p80 -script=http-enum localhost
+  PORT   STATE SERVICE
+  80/tcp open  http
+  | http-enum:  
+  |   /admin/: Admin directory
+  |   /icons/: Icons and images
+  |   /phpmyadmin/: phpMyAdmin
+  |_  /tmp/: tmp
+\end{lstlisting}
+
+\begin{lstlisting}[language={}]
+nmap -p80 -script=http-php-version localhost
+  PORT   STATE SERVICE
+  80/tcp open  http
+  | http-php-version: Versions from logo query 
+  | (less accurate): 5.3.1RC3, 5.3.1
+  | Versions from credits query (more accurate): 5.3.1RC3, 5.3.1
+  |_Version from header x-powered-by: PHP/5.3.1
+\end{lstlisting}
+
+\begin{lstlisting}[language={}]
+nmap -p 80 --script=http-form-brute 
+--script-args 'http-form-brute.path=/dvwa/login.php' 127.0.0.1
+
+  PORT   STATE SERVICE REASON  VERSION
+  80/tcp open  http    syn-ack Apache httpd 2.2.14 ((Unix) 
+  DAV/2 mod_ssl/2.2.14 OpenSSL/0.9.8l PHP/5.3.1 mod_apreq2-20090110/2.7.1 
+  mod_perl/2.0.4 Perl/v5.10.1)
+  | http-form-brute:  
+  |   Accounts
+  |     admin:password => Login correct
+  |   Statistics
+  |_    Perfomed 2011 guesses in 9 seconds, average tps: 223
+  Final times for host: srtt: 333 rttvar: 2912  to: 100000
+\end{lstlisting}
+
+
+\begin{lstlisting}[language={}]
+nmap --script smb-check-vulns.nse -p 445 192.168.178.40
+Host is up (0.00017s latency).
+PORT    STATE SERVICE
+445/tcp open  microsoft-ds
+MAC Address: 00:16:41:A7:39:D6 (USI)
+
+Host script results:
+| smb-check-vulns:  
+|   MS08-067: LIKELY VULNERABLE (host stopped responding)
+|   Conficker: UNKNOWN; not Windows, or Windows with disabled browser service 
+|   (CLEAN); or Windows with crashed browser service (possibly INFECTED).
+| |  If you know the remote system is Windows, try rebooting it and scanning
+| |_ again. (Error NT_STATUS_OBJECT_NAME_NOT_FOUND)
+|   regsvc DoS: CHECK DISABLED (add '--script-args=unsafe=1' to run)
+|_  SMBv2 DoS (CVE-2009-3103): CHECK DISABLED 
+|    (add '--script-args=unsafe=1' to run)
+\end{lstlisting}
+
+\subsection{Fazit}
+
+NMap ist ein bewährtes Tool, um Informationen über ein Netz zu
+gewinnen. Die Funktionalität von NMap lässt sich mit Scripts
+erweitern, allerdings gibt es bis auf die Scripts auf der offiziellen
+Entwicklerhomepage kaum fertige Scripts. Es würde einiges an Aufwand
+kosten neue Scripts zu erstellen oder die vorhandenen anzupassen.
+
+Es existieren auch Scripts, die Bruteforce-Angriffe, oder andere
+Penetrationtests durchführen, was die Tendenz erahnen lässt NMap zu
+einem Vulnerability-Scanner auszubauen. Allerdings kann der derzeitige
+Script-Umfang mit anderen Tools, wie beispielsweise OpenVas nicht
+mithalten.
+
+Scripts könnten allerdings gut verwendet werden, um die gewonnen
+Information aus NMap automatisiert weiterverarbeiten zu können.
+
+\subsection{Material}
+
+\begin{itemize}
+  \item NSE Tutorial, abgerufen am 12.10.2010,
+      URL: \url{http://www.scip.ch/?labs.20100507}
+  \item Offizielle Nmap Webseite, abgerufen am 12.10.2010,
+      URL: \url{http://nmap.org/nsedoc/}
+  \item Blogeintrag favorisierte NSE-Scripte, abgerufen am 12.10.2010,
+      URL: \url{http://www.attackvector.org/favorite-nmap-nse-scripts/}
+	\item Wikipedia Artikel zu \textit{LUA}, abgerufen am 12.10.2010,
+	    URL: \url{http://de.wikipedia.org/wiki/Lua}
+  \item NASL CVE-Support, abgerufen am 15.10.2010,
+      URL: \url{http://www.virtualblueness.net/nasl.html\#tth_sEc5.2.3}
+\end{itemize}

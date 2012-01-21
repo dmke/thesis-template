@@ -1,0 +1,217 @@
+\section{C\&C-Server}
+\label{sec:candc}
+\authors{\BK \and \MW}{\DE \and \HM \and \LM \and \JF \and \AB}
+
+Der \textit{C\&C-Server} ist die Benutzeroberfläche, mit der das \f-System
+bedient werden kann. Es handelt sich um eine Webanwendung, die mit dem
+Webframework Ruby on Rails\footnote{\url{http://www.rubyonrails.org}}
+implementiert wurde. Obwohl es sich um eine Webanwendung handelt, wird
+der C\&C-Server zumeist lokal betrieben, indem ein lokaler Webserver gestartet
+wird und mit dem Browser aufgerufen wird.
+
+Die Namensgebung ist an Botnetze angelehnt, bei denen der zentrale
+Steuerungs-Server als \textit{Command-and-Control-Server} bezeichnet wird.
+
+In diesem Kapitel wird die Bedienung und die Kommunikation zwischen C\&C-Server
+und den restlichen Komponenten des \f-Systems beschrieben.
+
+\subsection{Bedienung}
+
+Der C\&C-Server wird über einen Webbrowser bedient. Die Ansicht teilt sich
+im Wesentlichen in drei Bereiche (vgl. Abb.~\ref{fig:candc_screen}):
+
+\begin{enumerate}
+  \item Menüleiste
+  \item Netzansicht
+  \item Detailansicht
+\end{enumerate}
+
+Diese sollen im Folgenden kurz erläutert werden.
+
+\begin{figure}
+  \centering
+  \begin{tikzpicture}
+    \node[anchor=north west] at (0,0) {\pgfimage[interpolate=true,width=13cm]{images/candc-overview_numbers}};
+    \node[anchor=center,circle,draw=Red,ultra thick,fill=White] at (5cm,-1cm) {\large\textcolor{Red}{1}};
+    \node[anchor=center,circle,draw=Red,ultra thick,fill=White] at (4cm,-3cm) {\large\textcolor{Red}{2}};
+    \node[anchor=center,circle,draw=Red,ultra thick,fill=White] at (9cm,-3cm) {\large\textcolor{Red}{3}};
+  \end{tikzpicture}
+  \caption{Benutzeroberfläche}
+  \label{fig:candc_screen}
+\end{figure}
+
+\subsubsection{Menüleiste}
+
+In der Menüleiste lassen sich grundlegende Einstellungen vornehmen. So kann
+die verwendete Wissensbasis eingesehen, verschiedene Autopwner (Abschnitt~\ref{sec:autopwner}),
+oder \acr{ki}-Methoden (Abschnitt~\ref{sec:ki}) aufgeführt werden.
+
+\subsubsection{Netzansicht}
+%Visualisierung des Netzes
+%Auswahl der Hosts
+
+Die Netzansicht soll dem Benutzer einen grafischen Eindruck vom Aufbau
+des Netzes vermitteln. Das Netz wird als Graph dargestellt, bei dem
+die Knoten die Rechner und die Kanten die Verbindungen zwischen diesen
+Rechnern sind. Der Rechner auf dem das \f-System läuft ist blau markiert und
+immer in der Netzansicht zu sehen.
+Es kommen verschiedene Icons zum Einsatz, um
+das jeweilige Betriebssystem anzuzeigen. Ein kleiner
+\textit{\f-Schuh} im Bild gibt an, ob dieser Rechner sich bereits
+unter Kontrolle befindet und ferngesteuert werden kann.
+
+Durch Reconnaissance gefundene Rechner werden, nach ihrer Entdeckung,
+in der Netzansicht dargestellt.
+
+\subsubsection{Detailansicht}
+Die Detailansicht ist immer dann zu sehen, wenn ein Rechner in der
+Netzansicht selektiert wurde. Sie bietet grundlegende Informationen
+über den Rechner, wie z.B. angebotene Dienste. Über die angebundene
+CVE-Datenbank (Abschnitt~\ref{sec:cve-db}) können zu den Diensten
+Schwachstellen gesucht werden.
+
+Nachdem ein Rechner vom \f-System erfolgreich angegriffen wurde und
+somit \enquote{ferngesteuert} werden kann, stehen weitere Informationen zur
+Verfügung. Es können laufende Prozesse eingesehen werden und bei
+angebundener EvasionDB (Abschnitt~\ref{sec:evasion-db})
+protokollierte Exploits mit entstandenen \acr{idmef}-Events verglichen
+werden.
+
+
+\subsection{Anbindung an FIDIUS-Core}%Wie wir es im C&C Kontext benutzen
+\label{sub_sec:communication_candc_core}
+
+Wie im Abschnitt~\ref{sec:candc} bereits beschrieben, ist
+der C\&C-Server eine, mit dem \glos{rails}-Webframework umgesetzte,
+Webanwendung. Dies ist ein vom Rest des \f-System abgekoppelter
+Prozess, der die Steuerung des Restsystems, sowie die Anzeige für den
+Benutzer übernimmt. Damit Benutzereingaben und Befehle an den \f-Core
+übermittelt werden können, muss es eine für diese Prozesse gemeinsame
+Schnittstelle geben. In diesem Zusammenhang ist zu erwähnen, dass das
+\f-System aus insgesamt drei eingeständigen Prozessen besteht:
+
+\begin{itemize}
+  \item C\&C-Server
+  \item \f-Core (siehe Abschnitt~\ref{sec:core})
+  \item \acr{msf} (siehe Abschnitt~\ref{sec:msf_framework})
+\end{itemize}
+
+Die drei \f-Teilsysteme ermöglichen eine von den anderen Teilsystemen
+losgelöste Entwicklung. Allerdings bedarf eine solche Architektur eine
+Möglichkeit, Informationen zwischen den Prozessen auszutauschen.
+
+Die Kommunikation zwischen Prozessen oder \glospl{thread} wird im Allgemeinen
+auch \acr{ipc} genannt. Darunter fallen auch \glospl{socket}
+(\acr{tcp}- oder \acr{udp}-\glospl{socket}), die für die
+Interprozesskommunikation in einem Netz befindliche Rechner genutzt
+werden~\cite{Stevens:716026}. \acr{ipc} ist somit ein Oberbegriff für
+Schnittstellen, die einen Austausch von Informationen zwischen Prozessen, auf
+einem Rechner oder über ein Netz, ermöglichen.
+
+Für die \f-System-Kommunikation wurden folgende Schnittstellen näher betrachtet:
+
+\begin{itemize}
+  \item Pipes
+  \item \Glospl{signal}
+  \item \acr{amqp}
+  \item \acr{drb}
+  \item \acr{xml}-\acr{rpc}
+\end{itemize}
+
+\subsubsection*{Pipes}
+
+Pipes sind die erste Form von \acr{ipc} und sind auf allen aktuellen
+Unix-Systemen verfügbar. Die normale Form von Pipes sind nur \glos{halbduplex}
+und können nicht zwischen Prozessen eingerichtet werden, die keinen
+gemeinsamen Vorfahren haben ~\cite[718]{Herolds}. In der von uns betrachteten
+Implementation von Pipes mittels \glos{eventmachine} werden \acr{fifo}s
+(\textit{named pipes}) verwendet. Sie sind noch immer \glos{halbduplex}, aber
+ermöglichen die Kommunikation zwischen zwei nicht verwandten 
+Prozessen~\cite[744]{Herolds}. In der Variante von \glos{eventmachine} legt
+das Dateisystem eine \acr{fifo} an, die im Folgenden wie eine einfache Datei
+genutzt werden kann. Allerdings können Informationen in \acrpl{fifo} im Gegensatz
+zu einfachen Dateien nur einmal gelesen werden und auch nur in der Reihenfolge,
+wie sie zuvor in die Datei geschrieben wurden~\cite[265]{Herolds}. Grundsätzlich 
+kamen \acrpl{fifo} für das \f-System in Frage, jedoch ist die Ruby-Implementierung von
+\glos{eventmachine} nicht mit Windows-Systemen kompatibel.
+
+\subsubsection*{Signale}
+
+\Glospl{signal} können direkt vom Kernel kommen oder aber auch durch
+Software generiert und an andere Prozesse gesendet werden
+~\cite[599-630]{Herolds}. Vom Betriebssystem definierte \Glospl{signal} sind
+in der \texttt{<signal.h>} zu finden. Dabei sind hauptsächlich \texttt{SIGUSR1 30}
+und \texttt{SIGUSR2} für die \f-System-Kommunikation von Interesse. Da
+durch sie benutzerdefinierte \Glospl{signal} an Prozesse gesendet werden
+können. Dies ermöglicht aber wie sie im \f-System gewünschte komplexere
+\acr{ipc} nicht.
+
+\subsubsection*{\acr{amqp}}
+\label{subsec:amqp}
+
+\acr{amqp} wurde insbesondere im ersten Projektjahr von
+\f~\cite[Kapitel~3.7, S.\,163]{fidius} evaluiert und
+genutzt. Trotzdem war es abzuwägen, inwieweit es nützlich für die
+Kommunikation zwischen C\&C-Server und \f-Core ist. Insgesamt ist
+\acr{amqp} grundsätzlich im Stande, die gestellten Anforderungen an
+die Kommunikation des \f-Systems zu erfüllen. Der Einsatz von
+\acr{amqp} bietet sich jedoch hauptsächlich in Systemen an, die zum
+einen eine große Menge an Daten versenden und zum anderen in Systemen
+die gleichzeitig mehrere Komponenten informieren müssen. Zusätzlich
+würde der Einsatz von \acr{amqp} einen weiteren Server-Prozess
+bedeuten und die Komplexität des \f-Systems vergrößern.
+
+\subsubsection*{\acr{drb}}
+\label{subsec:drb}
+
+\acr{drb} nutzt \acr{rmi}, um die Kommunikation zwischen Ruby-Programmen zu
+ermöglichen. Mit \acr{drb} ist es möglich, Befehle oder Daten zwischen
+Prozessen auf dem gleichen Rechner oder übers Netz auszutauschen.
+
+\acr{drb} ist vollkommen in Ruby implementiert und bereits ab der
+Ruby-Version 1.8 in der Standard-Bibliothek enthalten. Mit \acr{drb}
+ist es möglich, Objektmethoden in anderem Prozessen direkt
+anzusprechen oder das gesamte Objekt zu übermitteln. Dies geschieht
+sowohl transparent für den aufrufenden Prozess als auch für das Objekt
+und dessen aufgerufene Methode. Vorteilhaft an \acr{drb} ist, dass
+Objekte nicht zum Versand in vom Benutzer zu definierende Pakete
+verpackt und wieder entpackt werden müssen.
+
+Einer der größeren Nachteile ist, dass \acr{drb} nur für die Kommunikation
+zwischen Ruby-Programmen nutzbar ist.
+
+\subsubsection*{\acr{xml}-\acr{rpc}}
+\label{subsec:xmlrpc}
+
+\acr{xml}-\acr{rpc} ist eine Vereinigung von einer
+\acr{rpc}-Architektur mit \acr{xml} und \acr{http}~\cite{rfc2068}
+Technologie. Es entstand bei dem Versuch, \acr{xml} über \acr{http}
+nutzbar zu machen und besitzt den Vorteil, dass es sich Web-Technologien
+zu nutzen macht. Weitere entscheidendere Vorteile für den Einsatz von
+\acr{xml}-\acr{rpc} im \f-System sind, dass in \acr{msf} bereits eine
+solche Schnittstelle existiert und für viele Programmiersprachen
+eine entsprechende Bibliothek bereitgestellt wird. \acr{xml}-\acr{rpc}
+ermöglicht, wie auch \acr{drb} und \acr{amqp}, die Kommunikation
+zwischen Prozessen auf dem gleichen Rechner oder über ein Netz. Dabei
+ist \acr{xml}-\acr{rpc} nicht programmiersprachenspezifisch wie
+\acr{drb} oder betriebssystemabhängig wie Pipes.
+
+Diese Eigenschaften ermöglichen es bei gleichbleibender
+Kommunikationsschnittstelle, den C\&C-Server durch eine andere
+GUI-Implementierung ohne größeren Aufwand auszutauschen.
+
+\subsubsection*{Kommunikation-Fazit}
+
+Zum Zeitpunkt der anfänglichen Entwicklung schien, dass
+\acr{xml}-\acr{rpc} für das \f-System die sinnvollste Wahl ist. Dies
+lag unter Anderem daran, dass \acr{msf} bereits über eine
+\acr{xml}-\acr{rpc} Schnittstelle verfügt und so die Komplexität des
+\f-Systems nicht durch eine zusätzliche Kommunikationsschnittstelle
+erhöhen würde. Außerdem bietet \acr{xml}-\acr{rpc} dem Projekt die
+nötige Flexibilität in der Wahl der Entwicklungsumgebung. Erst im
+späteren Verlauf, zeigte es sich, dass die für die Entscheidung mit
+verantwortliche \acr{xml}-\acr{rpc} Schnittstelle von \acr{msf} nicht
+nutzbar im \f-System ist. Der zeitliche Fortschritt des Projektjahres,
+ließ es allerdings nicht zu, die bereits implementierte
+\acr{xml}-\acr{rpc} Schnittstelle durch eine neue, wie die für das
+\acr{msf} entwickelte \acr{drb} Schnittstelle, auszutauschen.

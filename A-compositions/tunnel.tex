@@ -1,0 +1,293 @@
+\section{Tunnel - Hole Punching}
+\label{composition:tunnel} Im Rahmen der zweiten Hälfte des Projektes
+\f ist das Referat \textbf{Tunnel - Hole-Punching} entstanden.
+Das vorliegende Dokument ergänzt das Referat als entsprechende
+Ausarbeitung.
+
+Das Thema des Referates hatte seinen Ursprung in der Begründung der
+Verwendung von Brückenköpfen, welche es gilt in der zweiten Hälfte des
+Projektes einzusetzen. Brückenköpfe werden im Rahmen des Projektes,
+als durch '\f' unter Kontrolle gebrachte Rechner verstanden, die
+es ermöglichen, weitere Netze durch sich selber zu erschliessen und zu
+benutzen. Im weitesten Sinne können Brückenköpfe als Gateways
+verstanden werden.
+
+Diese ermöglichte Kommunikation, auch über Brückenköpfe hinweg, findet
+auf Rechnern statt, welche von '\f' erfolgreich kompromittiert
+wurden. Um Kommunikationen zu Rechnern aufrecht erhalten zu können
+müssen verbindungslose oder verbindungsorientierte Übertragungsdienste
+bereitgestellt werden. Aus diesem Grund sah es das Referat, als auch
+die Ausarbeitung vor sich auf VPN-Software zu konzentrieren. Da es im
+Rahmen des Projektes jedoch schon Vorstellungen, Erfahrung und die
+Nutzung von VPN-Software gab/gibt, wurde das Kernthema auf einen
+anderen Schwerpunkt verlagert - dem des Hole Punching.
+
+Hierbei handelt es sich um ein Verfahren welches beschreibt, wie
+Verbindungen zwischen entfernten Netzen hergestellt werden können,
+auch wenn die zu kommunizierenden Rechner jeweils hinter einer
+restriktiven Firewall und/oder einem NAT-GW eingebunden sind - es
+handelt sich um ein Spezialfall des Tunneling.
+
+Im Folgenden wird kurz auf die Nachteile von VPN-Software in Bezug auf
+die Verwendung innerhalb des Projektes \f eingegangen.  Es wird
+ein demonstratives Beispiel aufgezeigt wie Firewalls und NATs durch
+Hole Punching durchbrochen werden können.
+
+Abschließend wird auf den möglichen Nutzen für FIDIUS näher
+eingegangen.
+
+\subsection{Problem} Um einen Datenaustausch zwischen zwei Rechnern
+über das WAN zu ermöglichen, welche sich beide hinter einem NAT
+befinden, benötigt es Maßnahmen, welche als nicht immer gegeben
+angesehen werden können. Aus der Praxis kennt man gängige Verfahren
+wie \texttt{portforwarding} oder \texttt{UPnP}, die es regelhaft
+erlauben, gerichtete und bestimmte Kommunikation zuzulassen oder nicht
+zu ermöglichen. Beim Einsatz dieser Techniken wird die korrekte
+Konfiguration jedoch schon vorausgesetzt, um einen
+Kommunikationsaustausch überhaupt zuzulassen.  Sind diese
+Voraussetzungen erfüllt können gängige VPNs eingesetzt werden.
+\subsection{Software als Lösung}
+\label{sec:sw-solution} Gängige VPN-Software, so wie wir sie im
+Projekt in Form von OpenVPN einsetzen, können Rechner sehr gut direkt
+miteinander verbinden oder einen kontrollierten, integeren
+Datenaustausch ermöglichen. Jedoch müsste diese Software auf den zu
+kompromittierenden Rechnern installiert und konfiguriert werden. Die
+Funktionalität ist, da es sich im Fall von OpenVPN um den
+Quasi-Standard handelt, im Szenario '\f-Brückenkopf' von
+ausreichend bis überdimensioniert zu bewerten.
+
+Die hohe Funktionalität erhöht zudem die Fehlerwahrscheinlichkeit und
+mindert nicht die Notwendigkeit der anzupassenden
+Konfiguration. Hierzu gehören, neben der eventuellen Installation von
+Tap- oder Tun-Devices, auch das Routing, so wie die schon erwähnte
+Ausgangslage, dass Firewalls und NATs entsprechend angepasst sind.
+
+Dies bezüglich gibt es auch Software wie \texttt{campagnol
+\url{http://campagnol.sourceforge.net/}}, welche ohne entsprechende
+Einstellung von Firewalls eine Kommunikation zwischen zwei Rechnern
+ermöglicht.
+
+\textit{Campagnol is a distributed IP-based VPN software able to open
+new connections through NATs or firewalls without any configuration.}
+
+Die Installation vorausgesetzt könnte diese spezielle Software für
+eine Kommunikation zwischen Rechnern, jeweils hinter einem NAT,
+erfolgreich eingesetzt werden, ohne dass Informationen oder
+Konfigurationen bezüglich einer bestehenden Firewall oder eines NATs,
+notwendig sind. Ausschlaggebend dabei ist die Technik und das bekannte
+Prinzip, nicht die Software selber, so dass sich der Schwerpunkt des
+Referates und dieser Ausarbeitung auf eben diese Technik \textbf{Hole
+Punching} konzentriert, als weitere Software zu erläutern.
+
+\subsection{Technik als Lösung}
+\subsubsection{NAT - Network Address Translation} Spricht man vom
+\textit{Hole Punching} und stützt sich auf dementsprechende Literatur,
+beginnen sehr viele Quellen mit der Vorstellung der verschiedenen
+NAT-Typen, so dass diese grundlegende Information über die bestehenden
+Klassen der NATs an dieser Stelle nachgeholt werden soll.
+
+Gemäß ihres Verhaltens, werden NATs durch vier Typen klassifiziert
+
+\begin{enumerate}
+\item Full Cone
+\item Restricted Cone
+\item Port Restricted Cone
+\item Symmetric
+\end{enumerate}
+
+\paragraph{Full Cone NAT}
+
+Bezogen auf Abbildung~\ref{fig:nat-full-cone} sendet ein privater Host
+(PH) einen initialen Request zum Remote Host A.  Hierfür öffnet der
+NAT-Router einen öffentlichen Endpunkt (öffentliche Adresse mit
+Port). Jegliche Kommunikation oder Verbindung zu einem entfernten
+Rechner vom Port des privaten Hosts wird auf den gleichen Port des
+NAT-Routers \texttt{gemappt}. Bei einem Full Cone NAT kann nun jeder
+Remote Host von jedem Quellport zum Private Host A kommunizieren, in
+dem er den öffentlichen Endpunkt (öffentliche Adresse mit Port) des
+NAT-Routers benutzt.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=9cm]{images/nat_full_cone.png}
+  \caption{Full Cone NAT}
+  \label{fig:nat-full-cone}  
+  \small{Quelle: \url{http://sarwiki.informatik.hu-berlin.de/Image:NAT_full_cone.png}}
+\end{figure}
+
+\paragraph{Restricted Cone NAT}
+
+Das Verhalten des Restricted Cone NATs~\ref{fig:nat-restricted-cone}
+ist dem des Full Cone NATs~\ref{fig:nat-full-cone} nahezu
+identisch. Es unterscheidet sich lediglich dadurch, dass nur eine
+Kommunikation zu genau dem Remote Hosts erfolgen darf, zu dem der
+initiale Request gesendet wurde.  Alle anderen, eventuellen Pakete von
+Remote Hosts, würden je nach Konfirguration des NAT-Routers
+\texttt{gedroped} oder \texttt{rejected}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=9cm]{images/nat_restricted_cone.png}
+  \caption{Restricted Cone NAT}
+  \label{fig:nat-restricted-cone}
+  \small{Quelle: \url{http://sarwiki.informatik.hu-berlin.de/Image:NAT_restricted_cone.png}}
+\end{figure}
+
+\paragraph{Port Restricted Cone NAT}
+
+Diese Klassifizierung des NATs~\ref{fig:nat-port-restricted-cone}
+agiert noch restriktivier, als die des Restricted Cone NATs, indem vom
+Remote Host zusätzlich gefordert wird, dass jegliche Antwort vom
+angegebenen Ziel-Port aus erfolgt.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=9cm]{images/nat_port_restricted_cone.png}
+  \caption{Port Restricted Cone NAT}
+  \label{fig:nat-port-restricted-cone}
+  \small{Quelle: \url{http://sarwiki.informatik.hu-berlin.de/Image:NAT_port_restricted_cone.png}}
+\end{figure}
+
+\paragraph{Symmetric NAT}
+
+Das Symmetric NAT~\ref{fig:nat-sym} verwendet die höchste
+Restriktion. Hier wird zu jeder angeforderten verbindungsorientierten
+oder verbindungslosen Kommunikation des Private Hosts A zu einem
+Remote Host B, ein anderer gemappter Port als der Source-Port, auf dem
+NAT-Router benutzt (vergleiche hierzu Full Cone NAT).
+
+\begin{figure}
+  \centering
+  \includegraphics[width=9cm]{images/nat_symmetric.png}
+  \caption{Symmetric NAT}
+  \label{fig:nat-sym}
+  \small{Quelle: \url{http://sarwiki.informatik.hu-berlin.de/Image:NAT_symmetric.png}}
+\end{figure}
+
+
+\subsubsection{Hole Punching}
+Beim Hole Punching unterscheidet man zwischen UDP Hole Punching und
+TCP Hole Punching. Da UDP auf einer verbindungslosen Kommunikation
+beruht und dadurch das gängigere Hole Punching Verfahren beschreibt,
+wird im Folgenden darauf eingegangen.
+
+UDP Hole Punching erlaubt es zwischen zwei Rechnern eine direkte
+peer-to-peer UDP Session aufzubauen. Unter Zuhilfenahme eines
+Rendezvous Servers ist es darüber hinaus möglich eine Session
+aufzubauen, obgleich sich beide Rechner hinter einem NAT befinden.
+Diese Technik wurde laut RFC 3027 (Protocol Complications with the IP
+Network Address Translator) bereits vor dem heute bekannten STUN
+(siehe~\ref{sec:stun}) durch das proprietäre \texttt{Activision gaming
+  protocol} angewandt.  Auch ohne Verwendung eines Rendezvous Servers
+kann man das Prinzip und die Technik des Hole Punchings beispielhaft
+aufzeigen.
+\paragraph{Hole Punching ohne Rendezvous Server}
+Im Folgenden sei ein Host A und Host B gegeben. Host B ist dabei
+hinter einem Port Restricted NAT~\ref{fig:nat-port-restricted-cone}.
+Wenn Host A eine Verbindung zu B aufbauen soll ist dies auf Grund des
+NATs nicht möglich, da kein Port in das LAN zu Host B weitergeleitet
+wird. Selbst wenn Host B einen Listener~\ref{lst:netcat} durch
+\texttt{netcat} auf Port 69 UDP laufen läßt, ist dieser vom WAN nicht
+erreichbar, da dass NAT dies nicht zulässt.
+
+\begin{lstlisting}[language=bash]
+nc -u -l -p 69
+\end{lstlisting}
+\label{lst:netcat}
+
+Wenn nun Host B ein UDP-Datagramm von Port 69 zu Host A
+(74.125.39.104) schickt
+\begin{lstlisting}[language=bash]
+hping3 -c 1 -2 -s 69 -p 54 74.125.39.104
+\end{lstlisting}
+\label{lst:hping}
+wird dadurch genau Port 69 zu Host B in das LAN geöffnet, falls es
+sich um ein \texttt{(Port) Restricted Cone NAT }handelt.  Versucht
+darauf hin Host A nochmals ein UDP-Datagramm zu Host B zu schicken
+gelingt dies, da Host B diesen Port selber in das eigene LAN geöffnet
+hat.
+
+\paragraph{Hole Punching mit Rendezvous Server}
+\label{sec:hole-rendezvous}
+Die weitaus praktikablere Variante des Einsatzes des UDP Hole
+Punching, ist die unter der Verwendung eines Rendezvous Servers.  Der
+Rendezvous Server agiert in dem beispielhaften Szenario als
+Mittelsmann zwischen zwei Hosts A und B, welche jeweils hinter einem
+NAT in einem LAN eingebunden sind. Abbildung~\ref{fig:rendezvous} soll
+diesen Sachverhalt visualisieren.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=6cm]{images/rendezvous.png}
+  \caption{Zwei Hosts, jeweils hinter NAT}
+  \label{fig:rendezvous}
+\end{figure}
+
+Diese Konstellation von zwei verschiedenen Hosts/Clients und einem
+Server ist ein Beispiel, welches in vielen Audio-Anwendungen in Form
+von VOIP-Software wiederzufinden ist. Eines der bekannteren Programme
+ist sicherlich Skype.  Skype, wie auch andere peer-to-peer-Anwendungen
+bedienen sich genau dieser Technik und \textit{bohren} dadurch Löcher
+in die eigene Firewall und übergehen ebenfalls multiple NATs.
+
+Angenommen Client A möchte Client B anrufen. Beide sind schon jeweils
+am Rendezvous Server (in diesem Fall der Skype Server) mit ihren Daten
+angemeldet. Der Skype Server weiss somit wie die jeweils öffentlichen
+IP-Adressen von Client A und B sind, sowie über welchen Port jeweils
+die Audiodaten von Client A und B übertragen werden würden, da dies im
+Anwendungsclient eingestellt ist.
+
+Sobald Client A dem Skype Server seinen Wunsch mitgeteilt hat Client B
+anzurufen, initiiert dieser einen Sessionaufbau von Client B zu
+A. Client B öffnet dadurch einen Port in der eigenen Firewall
+bzw. leitet alles was an diesen Port des NATs adressiert ist und von
+der öffentlichen Adresse des Clients A kommt, an die private Adresse
+des Clients B weiter.
+
+Der Versuch des Sessionaufbaus von Client B zu Client A wird an der
+Firewall oder an dem NAT des Clients A scheitern, da diese(r) an den
+Port adressierte Pakete dropen oder rejecten wird. Doch ab diesen
+Zeitpunkt kann Client A, durch die gewonnenen Informationen des Skype
+Servers über Client B selber die Session beginnen, indem er die
+öffentliche Adresse von B, sowie den von Client B selber geöffneten
+Port als Ziel angibt. Das Gespräch kann somit zu stande kommen.
+
+Diese Technik wird unter anderem auch als RFC-Standard unter dem Namen
+STUN eingesetzt.
+
+\subsection{STUN}
+\label{sec:stun} Früher \texttt{Simple traversal of UDP through NATs}
+durch RFC 3489 definiert, steht STUN heute für \texttt{Session
+Traversal Utilities for NATs} (RFC 5389) und ist der Standard für
+VOIP-Anwendungen wie sip-basierte Telefonie. Es bietet eine
+Client-Server Struktur und basiert auf \texttt{requests} der Clients,
+welche durch STUN-\texttt{responses} beantwortet werden. Viele grosse
+Anbieter wie sipgate.de haben öffentliche STUN-Server welche das
+unter~\ref{sec:hole-rendezvous} exemplarisch gezeigte Vorgehen
+unterstützen und genau dafür ausgelegt sind. Da sich das eigentliche
+Vorgehen bei der Verwendung von STUN nicht wesentlich von dem Beispiel
+abhebt, soll an dieser Stelle nicht weiterführend darauf eingegangen
+werden. Nichtsdestotrotz zeigt es die aktuelle Praktikabilität.
+
+\subsection{Nutzen für FIDIUS} Unter Punkt~\ref{sec:sw-solution} wurde
+bereits herausgestellt, dass die Verwendung von VPN-Software schwierig
+zu realisieren sein wird, da Installations- und Konfigurationsprozesse
+zu komplex für kompromittierte Rechner wirken, um Brückenköpfe
+aufzubauen. Herausgestochen bei der Software ist \texttt{campagnol}
+durch die Verwendung der Technik des Hole Punchings.
+
+Hole Punching ist als Technik dann für \f interessant, falls NATs
+oder Firewalls überwunden werden müssen, ohne Konfigurationsprozesse
+durchführen zu müssen. In wie weit es konkret einsetzbar ist, wird
+sich im Laufe der zweiten Halbzeit des Projektes zeigen.
+
+
+\subsection{Quellen} 
+\cite{rfc3027},
+\cite{rfc3489},
+\cite{rfc5389},
+\cite{tunnel-p2pnat},
+\cite{tunnel-skype},
+\cite{tunnel-nat-traversal},
+\cite{en-wiki:udp-hole},
+\cite{en-wiki:nat-hole}

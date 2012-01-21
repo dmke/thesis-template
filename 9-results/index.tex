@@ -1,0 +1,87 @@
+\chapter{Fazit}
+\label{chp:results}
+\section{Fazit}
+\authors{\DK \and \LM \and \MW}{\DH \and \JF \and \HM \and \DE}
+
+Der erreichte Funktionsumfang des \f-Systems und die erfüllten Ziele
+wurden bereits im Kapitel~\ref{chp:conclusion} auf
+Seite~\pageref{chp:conclusion} vorgestellt. Im folgenden Kapitel wird nun
+auf die verbleibenden Ziele des Kapitel~\ref{chp:objectives}
+(Seite~\pageref{chp:objectives}) eingegangen und ein allgemeines Fazit über das
+Projekt und sein Ergebnis gefasst.
+ 
+\subsection{FIDIUS-System}
+Ein wesentliches Ziel des \f-Systems war der Vergleich und die
+Evaluierung von verschiedenen \acr{ids}. Wesentliche Idee war hierbei, eine
+Reihe von definierten Angriffen und gesendeten Datenströmen auszuführen und
+das Verhalten des \acr{ids} während dieser Zeit zu protokollieren. Zum
+einen sollten die protokollierten Daten als Bericht zur Verfügung gestellt
+werden, zum anderen sollte der Bericht Informationen wie \zB erzeugte False-Positives
+oder richtig erkannte Angriffe beinhalten. Mit diesen Daten hätten außerdem
+verschiedene \acrpl{ids} miteinander verglichen werden können.
+
+Im jetzigen Zustand kann das \f-System zwar das Verhalten von \acr{ids}
+protokollieren, wenn eine Schnittstelle zwischen \acr{msf} und dem
+\acr{ids} bereitgestellt wird, aber es erfolgt keine automatische
+Auswertung der erhobenen Daten, um einen Bericht zu erstellen. Eine
+Auswertung der protokollierten Daten findet zwar beim Snortor statt,
+allerdings wird hier nur das Ergebnis hinsichtlich eines \acr{ids}
+optimiert, es werden nicht verschiedene \acrpl{ids} miteinander
+verglichen.
+
+Die Host-Reconnaissance ist ein weiteres Ziel, welches nicht komplett gelöst wurde.
+Die benötigte Funktionalität wurde zwar unter Verwendung von \acr{metap}
+umgesetzt, allerdings wurde diese Funktionalität nach der Umstellung auf
+die \f-Core Architektur, siehe Abschnitt~\ref{sec:core} auf
+Seite~\pageref{sec:core}, nicht mehr in ins \f-System integriert. Dieses
+Schicksal teilen auch die andere, im Rahmen von \f entwickelten \acr{metap}-Skripte.
+
+Wie bereits im Kapitel~\ref{chp:conclusion} auf
+Seite~\pageref{chp:conclusion} beschrieben wurde, wurde die
+\f-Core Architektur eingeführt, um den modularen Aufbau des
+Systems zu gewährleisten. Während der modulare Aufbau zwischen
+der \acr{gui} und dem \f-Core gut funktioniert hat, ist dies zwischen
+dem \f-Core und \acr{msf} nicht gut gelungen, da die beiden Komponenten
+durch \acr{drb} eng miteinander gekoppelt sind. Das widerspricht der
+ursprünglichen Planung, dass das \f-System mit
+beliebigen Angriffsframeworks kompatibel ist und somit \acr{msf}
+austauschbar sein sollte. Genauere Informationen zur Kommunikation mit dem
+\f-Core können im Abschnitt~\ref{subsec:core:communication} auf
+Seite~\pageref{subsec:core:communication} gefunden werden.
+
+Allerdings gibt es keine gut getrennte
+Schnittstelle zwischen \f-Core und \acr{msf}. Durch die Verwendung von
+\acr{drb} zwischen \f-Core und \acr{msf} ist es möglich, direkt auf
+\acr{msf}-Methoden zuzugreifen. Damit ging die Anbindung über \acr{drb}
+schnell vonstatten, hat aber auch dazu geführt, dass \acr{msf} mit dem
+\f-Core, genauer gesagt mit der Action-Komponenten, stark gekoppelt ist
+und nicht einfach ausgetauscht werden kann.  
+
+Neben der nicht vorhandenen Schnittstelle hat die Verwendung von \acr{drb}
+zu einigen Fehlern im System geführt. Die Fehler entstanden
+hauptsächlich beim Weiterreichen von Referenzen auf \acr{msf}-Objekten und
+der anschließenden Verwendung dieser Objekte im \f-Core. Die Fehlerfindung
+musste über \acr{drb} hinweg sowohl im \f-Core als auch in \acr{msf}
+durchgeführt werden und wurde entsprechend stark erschwert, dadurch wurde
+auch einen Großteil des erhaltenen Zeitgewinns negiert.
+
+Letzendlich hat sich gezeigt, dass die Verwendung
+von \acr{drb} als Kommunikationsschnittstelle zwischen \f-Core und
+\acr{msf} eine gute Wahl war, da alle anderen Lösungen noch
+aufwändiger gewesen wären und selbst mit \acr{drb} die Umstellung aufgrund
+von Zeitmangel nicht komplett durchgeführt werden konnte. Die
+starke Kopplung von \acr{msf} kann auch verkraftet werden, da uns kein
+vergleichbares Framework bekannt ist, für das man \acr{msf}
+austauschen wollte.
+
+Grundsätzlich lief die Projektarbeit sehr flüssig und bis auf einige
+größere Umstellung in der Architektur, sind nur sehr wenige Stellen
+die bei einem erneuten Beginn anders gemacht werden
+sollten. Dabei ist der wichtigste Punkt, das Definieren eines genauen Zieles 
+und nicht nur einer ungefähren Richtung. Zusätzlich war die Aufteilung im 
+ersten Projektjahr (KI und RN) nicht sehr förderlich und hätte im Nachhinein 
+anders gelöst werden sollen.
+
+Zusammenfassend kann man sagen, dass
+das Projekt, obwohl es nach einem Jahr eine Zielveränderung gab, sehr
+erfolgreich war.

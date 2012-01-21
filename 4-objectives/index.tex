@@ -1,0 +1,195 @@
+\chapter{Ziele}
+\label{chp:objectives}
+
+\section{Anforderungen an das FIDIUS-System}
+\label{chp:objectives-functions}
+
+\authors{\HM}{\LM \and \BK \and \JF \and \DE \and \MW}
+
+Das \f-System soll, wie es in der Motivation bereits gesagt wurde
+(siehe~\ref{chp:motivation}), Angriffe auf Netze simulieren oder
+ausführen, um verschiedene \acrpl{ids} zu testen und Schwachstellen
+in dessen Implementierung und Konfiguration zu finden. Das System soll
+es einem durchschnittlichen Administrator eines Netzes ohne Kenntnisse
+über Penetration-Testing mithilfe von Methoden der \acr{ki}
+ermöglichen, Angriffe gegen sein Netz auszuführen.
+Mit diesen Angriffen kann der Administrator überprüfen inwieweit Angriffe
+auf sein Netz von der
+Sicherheitsinfrastruktur unter anderem aus \acr{ids} und
+\glos{ips} erkannt und verhindert werden.
+Die Ergebnisse der Angriffe auf das Netzes sollen am Ende in einem Bericht
+zusammengefasst werden und sich unter anderen als pdf exportieren lassen.
+ Zusätzlich soll das
+\f-System, die Konfiguration von \acrpl{ids} mit einer \acr{ki} optimieren,
+damit es zwar alle Angriffe erkennt, aber die False-Positive-Rate
+minimiert wird.
+
+Das System soll unter einer Open Source Lizenz für die Allgemeinheit im
+Internet veröffentlicht werden, damit andere Leute sich an der Entwicklung
+beteiligen können oder sie nach dem Ende des Projektes übernehmen können.
+
+\subsection{Aufbau}
+\label{chp:objectives-archi}
+Es soll sich um ein verteiltes System handeln, welches aus verschiedenen Teilen
+zusammengesetzt ist.
+Die Core-Komponente des \f-Systems soll die \acr{ki} enthalten, das Wissen
+speichern und die Aktionen ausführen.
+Die \acr{gui} zum Bedienen des Systems soll sich über eine Netzschnittstelle mit dem 
+Core verbinden und sich über einem Webbrowser bedienen lassen.
+Auf dieser Strecke soll \acr{xml}-\acr{rpc} verwendet werden, damit die Schnittstelle
+sprachunabhängig ist.
+Die Systeme sollen alle modular aufgebaut werden, damit sich einzelne
+Komponenten leicht austauschen lassen und es sollen einheitliche Schnittstellen
+verwendet werden, damit neue Funktionen einfach, auch ohne das Ändern von
+bestehenden Code, hinzugefügt werden können.
+Einige Funktionen sollen als Bibliothek implementiert werden, damit sie später
+auch von anderen Programmen in einem anderen Zusammenhang benutzt werden können.
+Zum Ausführen von Exploits soll \glos{msf} benutzt werden, es soll aber später
+möglich sein andere ähnlich Systeme zum Ausführen von Exploits zu verwenden.
+Zwischen dem Core und \glos{msf} soll sich eine weiter Netzschnittstelle
+befinden, damit \glos{msf} nicht neu geladen werden muss, wenn der Core neu
+geladen wird, da das Laden von \glos{msf} auch auf schnellen Computer über 20 Sekunden dauert.
+
+%Das System besteht aus dem Core (siehe~\ref{sec:core}) welcher mithilfe von \glos{msf}
+%die Exploits ausführt.
+%Der Benutzer steuert den Core über die GUI des C\&C-Server (siehe~\ref{sec:candc}).
+%Die beiden Teile kommunizieren über eine XMLRPC Schnittstelle miteinander und können
+%auf unterschiedlichen Computer betrieben werden.
+
+%Der Core ist modular aufgebaut und lässt sich erweitern.
+%Die Decisionkomponente des Cores schlägt mithilfe einer \acr{ki} die nächste Aktionen
+%vor, die das System ausführen soll.
+
+
+\subsection{Hosts Angreifen}
+\authors{\HM}{\BK \and \JF \and \DE \and \LM \and \MW}
+\label{chp:objectives-functions-pwnen}
+
+Das Angreifen eines Netzes besteht aus mehreren Schritten. 
+Zuerst soll der Benutzer angeben, welches Netz er scannen möchte. Die gefundenen
+Hosts mit ihren offenen Ports sollen dann dem Wissen des Cores hinzugefügt werden.
+Dann soll die \acr{ki} das nächste anzugreifende System, anhand 
+des erlangten Wissens, auswählen.
+
+Als nächstes entscheidet die \acr{ki} auf Basis der offenen Ports und der
+Versionen der dort laufenden Dienste, welcher Exploit für den Angriff benutzt werden soll.
+Das \f-System soll Exploits verwenden, die offene Ports von Systemen
+angreifen, da diese Angriffe am besten von \glospl{ids}n erkannt werden.
+Nachdem der Angriff ausgeführt wurde sollen die erlangten Informationen, wie
+welcher Exploit erfolgreich war und sonstige Informationen die über die
+Reconnaissance (siehe Abschnitt~\ref{chp:objectives-anwendungsfaelle}) erlangt wurden,
+in die Wissensbasis des Systems eingefügt werden.
+Das System muss so konfiguriert werden können, dass Schäden an nicht
+testbezogenen Systemen verhindert werden. Hierzu sollte es eine Benutzerabfrage
+vor jedem Angriff geben. Außerdem sollte es möglich sein diese Abfrage in
+Testnetzen, ohne Zugang zu Produktivsystemen, zu deaktivieren.
+
+Zum Ausführen der Angriffe soll ein externes Framework
+verwendet werden, welches viele Exploits enthält, 
+die sich über eine einheitliche Schnittstelle ansprechen lassen.
+Diese Eigenschaften werden vom \acr{msf} erfüllt, welches verwendet werden soll.
+Mithilfe von \glos{msf} soll es möglich werden, \glos{pivoting} auszuführen,
+also über einen Host, welcher unter der Kontrolle von \f steht einen
+weiteren Host anzugreifen zu dem keine direkte Netzverbindung besteht.
+Es soll auch möglich sein einen Host über einen Exploit in einer Client
+Anwendung wie einem Browser anzugreifen, indem \zB der Nutzer des anzugreifenden
+Hosts auf eine manipulierte Website gelockt wird.
+
+\subsection{KI}
+\authors{\DK}{\LM \and \DE \and \MW \and \JF}
+\label{chp:objectives-functions-ki}
+
+Die Anforderungen an die Künstliche Intelligenz können in zwei
+Abschnitte geteilt werden: Black-Box- und Gray-Box-Szenario.
+
+Im Black-Box-Szenario ist zu Beginn des Angriffs nichts über das Netz
+bekannt. Die Künstliche Intelligenz soll entweder den Angriff
+möglichst autonom durchführen können oder den Nutzer unterstützen.
+Dazu muss die \acr{ki} in der Lage sein, Aktionen zu wählen und deren
+Erfolg zu messen. Erst im Verlauf eines Angriffs wird neues Wissen
+über das Netz erschlossen, also muss die \acr{ki} dazulernen
+können. 
+
+Im Gray-Box-Szenario ist die Topologie des Netzes bekannt, 
+anderes Wissen, wie laufende Dienste oder installierte
+Webserver, nicht. Diese \acr{ki}-Komponente soll in der Lage sein,
+Angriffspläne zu erstellen, wobei nicht das gesamte Wissen vorliegt.
+An bestimmten Stellen im Plan sollen daher sogenannte \enquote{sensing
+actions} eingefügt werden, die es dem System ermöglichen, in
+bestimmten Situationen neues Wissen durch Messungen zu bekommen.
+Wie die Entscheidung des nächsten anzugreifenden Hosts getroffen wird
+und wie die Plankomponente implementierbar ist, wird in Abschnitt~\ref{sec:ki}
+beschrieben. 
+
+\subsection{IDS testen}
+\label{chp:objectives-functions-idstest}
+\authors{\HM}{\BK \and \JF \and \DE \and \LM \and \MW}
+
+Zum Testen von \glos{ids} soll das \f-System  Angriffe auf Hosts in Netzen
+ausführen. Ziel soll es sein, die von einem \glos{ids} erstellten Daten, zu
+analysieren die bei einem Angriff erzeugt werden. 
+Das \f-System soll einerseits zum Testen der Implementierung eines \glos{ids}
+verwendet werden können \zB um sie mit anderen Systemen zu vergleichen oder
+zur Unterstützung bei der Entwicklung eines neuen \glos{ids}.
+
+Die Konfiguration eines \glos{ids} ist sehr komplex und es verlangt sehr viel
+Erfahrung die Konfiguration an ein bestimmtes Netz anzupassen.
+Hier soll das \f-System dazu verwendet werden können, solche Konfigurationen
+zu testen und sie mittels \acr{ki}-Algorithmen zu optimieren.
+
+Bei den Tests soll versucht werden die Erkennungsrate zu erhöhen, sodass 
+alle Angriffe von dem \glos{ids} erkannt werden, die \glos{false-positive}-Rate
+soll aber gleichzeitig minimiert werden.
+
+Damit das \f-System überprüfen kann, ob die Angriffe von dem zu testenden
+\glos{ids} erkannt wurden, soll es möglich sein das \glos{ids} mit dem \f-System zu
+verbinden, damit das \f-System die vom \glos{ids} generierten Events analysieren kann.
+Über eine Schnittstelle zwischen dem \f-System und dem \glos{ids} soll
+auch überprüft werden, ob keine Alarme von dem \glos{ids} generiert werden,
+wenn keine Angriffe durchgeführt werden.
+Zum \glos{prelude-ids} und zum \glos{ids} des \acr{fides}-Projektes soll eine
+Anbindung an das \f-System erstellt werden, über welche das \f-System auf die
+vom \glos{ids} generierten Events zur Analyse zugegriffen werden kann.
+Schließlich soll das System des \acr{fides}-Projektes mit anderen etablierten \glos{ids}
+wie dem \glos{prelude-ids} hinsichtlich der Erkennungs- und 
+\glos{false-positive}rate mithilfe des \f-Systems verglichen werden.
+
+\subsection{Reconnaissance}
+\label{chp:objectives-functions-reconnaissance}
+\authors{\HM}{\BK \and \JF \and \DE \and \LM}
+
+Ziel der Reconnaissances ist es, Informationen über einen Host und seine Umgebung
+zu sammeln, nachdem das \f-System die Kontrolle über ihn übernommen hat.
+Hierbei ist zwischen Host-Reconnaissance und Netz-Reconnaissance zu unterscheiden.
+Bei der Host-Reconnaissance soll die genaue Betriebssystemversion, seine
+Netzkonfiguration und die auf dem System gespeicherten Passwörter ermittelt
+werden und in Wissensbasis des \f-Systems übernommen werden.
+In der Netz-Reconnaissance sollen die Netze in der Umgebung des übernommenen
+Hosts über diesen gescannt werden, falls dieser Host
+Zugriff zu Netzen hat, die vom \f-System nicht direkt erreichbar sind.
+Diese Scans sollen sowohl passiv, durch das Mitschneiden der ankommenden Pakete auf
+den Netzinterfaces, als auch über einen aktiven Scan, wie einen
+Ping-Scan durchgeführt werden können.
+
+\section{Anwendungsfälle}
+\label{chp:objectives-anwendungsfaelle}
+\authors{\HM}{\BK \and \JF \and \DE \and \LM}
+
+Das \f-System ist hauptsächlich für zwei Anwendungsfälle ausgelegt.
+
+\begin{enumerate}
+  \item Bei der Entwicklung eines neuen \glos{ids} oder bei der Weiterentwicklung
+    eines bestehenden \glos{ids}. Hierbei kann das \f-System in einem Testnetz
+    die Funktionalität des \glos{ids} testen und es kann eine echte Umgebung
+    simuliert werden.  Das \f-System kann in einem \acr{ci}-System benutzt
+    werden, mit den kontinuierlich überprüft wird, ob das \glos{ids} noch
+    alle Angriffe erkennt, die es vorher erkannt hat und ob die
+    False-Positive-Rate sich verändert hat.
+  \item Bei der Installation und Konfiguration eines \glos{ids} in einem Netz.
+    Wenn ein neues \glos{ids} zum Schutz eines Netzes (\zB in einem Unternehmen)
+    eingerichtet wird, kann mit dem \f-System die Erkennungsrate und der Anteil
+    der False-Positive-Meldungen überprüft werden. Das \f-System kann auch
+    direkt zur Optimierung der Konfiguration benutzt werden, nachdem alle
+    Sensoren in einem Netz installiert wurden.
+\end{enumerate}
+

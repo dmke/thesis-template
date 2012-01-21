@@ -1,0 +1,271 @@
+\section[Netflow \& IPFIX -- Security und Diagnose]
+  {Netflow \& IPFIX\\Security und Diagnose}
+\label{compositions:netflow-security}
+\authors{\KUH}{}
+
+\subsection{Einleitung}
+Dieses Referat soll einen Überblick darüber geben, inwiefern sich
+Netflow/IPFIX zur Diagnose und zur Verbesserung der Sicherheit eines
+Netzes verwenden lassen. 
+
+Durch die Verwendung von Netflow/IPFIX soll auch die Möglichkeit gegeben
+werden, ein Netz mit hoher/sehr hoher Auslastung (GB-Bereich) zu
+überwachen. Im Rahmen des Vortrages möchte ich vor allem darauf
+eingehen, wie man mit Netflow/IPFIX es dem Benutzer (Administrator)
+eines Netzes vereinfachen kann, Angriffe auf das Netz oder Anomalien im
+Netz zu finden und zu beheben. Dabei gibt es verschiedene Verfahren, um
+Schlüsse über mögliche Angriffe oder Anomalien zu ziehen.
+
+Zum einen gibt es statische Verfahren, die ähnlich wie Snort auf
+festgelegten Regeln basieren, zum anderen gibt es Verfahren, die
+lernfähig sind und sich am verhalten des Traffics im Netz orientieren.
+
+Als Beispiel für bisherige Implementationen dient die Programmsammlung
+NFDUMP mit der Benutzeroberfläche NfSen.
+
+\subsection{Netflow vs. libpcap}
+
+In diesem Teil schaue ich mir Netflow und die libpcap ein wenig näher an.
+Ich werde auf Tests der jeweiligen Implementierung eingehen und inwiefern
+dies für den FIDIUS-Kontext von Bedeutung ist.
+
+\subsubsection{libpcap}
+
+Die libpcap wird bei vielen gängigen passiven Paketerfassungs-Programmen
+verwendet. Die Bibliothek selber ist relativ einfach zu bedienen und es
+gibt schon sehr gute Tutorials, die die Verwendung genauer erklären%
+\footnote{\url{http://yuba.stanford.edu/~casado/pcap/section1.html},
+abgerufen am 13.11.2010}.
+
+Die libpcap wird bisher den Programmen: Tcpdump%
+\footnote{\url{http://www.tcpdump.org/}, abgerufen am 14.11.2010}, 
+Ethereal\footnote{\url{http://www.ethereal.com/}, abgerufen am 14.11.2010}
+sowie das von uns bisher verwendete Snort verwendet.
+
+Libpcap hat jedoch das Problem, dass das heutige Datenvolumen nicht mehr
+vollständig erfasst werden kann. Wobei hier jedoch die Unterscheidung
+zwischen großen und kleinen Paketen gemacht werden muss. Dies wird in
+den Tests noch näher erläutert. Das eben genannte Problem wird auch
+\textsl{livelock} genannt.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{images/pcap_abb1}
+  \caption{Darstellung des livelock Problems}
+  \label{fig:netflow-security:livelock}
+\end{figure}
+ 
+\subsubsection{Netflow}
+
+Netflow wurde von Cisco entwickelt um auch Netze mit höherem
+Datenaufkommen, im GBit-Bereich, überwachen zu können. Näheres dazu im
+Referat von Andreas Bender. Die Performance der Netflow Kollektoren skaliert stark mit der
+eingesetzten Hardware. Dies wird in den Tests auch nochmal verdeutlicht.
+
+\subsubsection{Tests}
+
+Die Tests wurden einem Paper von Luca Deri entnommen\footnote{%
+\url{http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.58.3128&rep=rep1&type=pdf},
+abgerufen am 14.11.2010}.
+
+\paragraph{libpcap}
+
+Der Test der libpcap entstand mit folgendem Sender und Empfänger:
+
+\begin{itemize}
+ \item Sender: Dual Core 1.8 GHz Athlon, Intel Gbit ethernet card
+ \item Empfänger: Pentium III 550 MHz, Intel Gbit ethernet card
+\end{itemize}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.8\linewidth]{images/pcap_abb_2}
+  \caption{Test der libpcap}
+  \label{fig:netflow-security:test-libpcap}
+\end{figure}
+
+Wie man anhand der Tabelle erkennen kann, sind die prozentualen Werte
+der Paket-Erfassung nicht wirklich gut. FreeBSD mit Polling bietet im
+großen und ganzen die besten Werte im Gegensatz zu den beiden anderen
+Betriebssystemen. Es fallen jedoch bei größeren Paketen noch viele
+Pakete durchs Raster durch. Dies ist nicht sonderlich gut, wenn wir das
+Netz überwachen wollen.
+
+\paragraph{Netflow}
+
+\subparagraph{Test 1}
+
+Der erste Test mit Netflow entstand mit folgendem Sender und Empfänger:
+
+\begin{itemize}
+ \item Sender: Dual Core 1.8 GHz Athlon, Intel Gbit ethernet card
+ \item Empfänger: Pentium III 550 MHz, Intel Gbit ethernet card
+\end{itemize}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.8\linewidth]{images/netflow_abb_1}
+  \caption{Test von Netflow 1}
+  \label{fig:netflow-security:test-netflow-1}
+\end{figure}
+
+In der Tabelle erkennt man, wieviele Pakete pro Sekunde verschickt
+wurden. Dies kann man auch auf den Test der libpcap beziehen. Man erkennt
+in der Tabelle deutlich, dass ohne Polling ein Großteil der kleinen
+Pakete erfasst werden, jedoch die Rate der erfassten Pakete kleiner wird
+bei größeren Paketen. Dies passiert mit Polling ebenso, nur werden
+weniger kleine Pakete erfasst.
+
+\subparagraph{Test 2}
+
+Der zweite Test mit Netflow entstand mit folgendem Sender und Empfänger:
+
+\begin{itemize}
+  \item Sender: Dual Core 1.8 GHz Athlon, Intel Gbit ethernet card
+  \item Empfänger: Pentium 4 1.7 GHz, Intel GE 32-bit
+\end{itemize}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.8\linewidth]{images/netflow_abb_2}
+  \caption{Test von Netflow 2}
+  \label{fig:netflow-security:test-netflow-2}
+\end{figure}
+
+Bei diesem Test wurde der Empfänger von der Hardware her um einiges
+verbessert. Stellt jedoch noch keinen Highend Computer dar. Man erkennt
+deutlich die Verbesserung im Gegensatz zum Ersten Test. Es werden immer
+noch nicht alle kleinen Pakete erfasst, jedoch werden sämtliche größeren
+Pakete erfasst. Somit erkennt man die Skalierung von Netflow mit der
+Hardware sehr deutlich.
+
+\paragraph{Ergebnisse der Tests}
+
+Netflow liefert weitaus bessere Ergebnisse bei größeren Paketen ab.
+Allerdings haben libpcap sowie auch netflow Probleme mit den kleinen
+Paketen. Dies ist wohl daraus begründed, dass einfach zuviele Pakete
+ankommen, die in einer Sekunde verarbeitet werden sollen. Wie man im
+zweiten Test von Netflow gesehen hat, waren es über eine halbe Million
+Pakete in der Sekunde. Da kam die Hardware an ihre Grenzen. 
+
+Da die Tests jedoch auf relativ alten Computern ausgeführt wurden und
+auch schon älteren Datums sind, stellen die Tests nicht den heutigen
+Stand der Dinge dar. Aufgrund dessen, dass die meisten Angriffe mit
+kleinen Paketen gemacht werden, bietet es sich weiterhin an mit den
+aktuellen Sensoren weiter zu arbeiten.
+
+\subsection{Probleme von Netflow}
+
+Ebenso wie auch schon bei der libpcap, kann es bei Netflow zu einem
+\textsl{livelock}~\ref{fig:netflow-security:livelock} kommen. Dazu hat
+man bei Netflow jedoch mehrere Möglichkeiten diesen zu umgehen.
+
+\begin{itemize}
+  \item Verringern der Anzahl der Flows
+  \item Flows  zusammenfassen
+  \item Starten des filtern, bevor die Daten in den Flow gepackt werden
+  \item Ändern der Filter-Parameter
+  \item Ändern der Prozess Priorität
+  \item Im schlechtesten Fall: Stoppen der Messung
+\end{itemize}
+
+Ein weiteres Problem bei Netflow stellt der Verlust von Flow-Daten dar.
+Auch hierfür gibt es verschiedene Lösungsansätze um das Problem zu umgehen.
+
+\begin{itemize}
+  \item Erneutes senden der Flow-Daten
+  \item Verbindungsabbruch und Fehlersuche
+  \item Bestätigung der Flow-Daten vom Kollektor
+\end{itemize}
+
+Weiterhin können die Flow-Daten natürlich auch von Angreifern abgefangen
+werden, sofern die Übertragung nicht anständig gesichert ist. Um so etwas
+zu umgehen, sollten zum einen die Daten nicht übers Internet versendet
+werden. Die Daten sollten Anonymisiert werden, sowie für die Übertragung
+verschlüsselt werden.
+
+\subsection{Analyse Verfahren}
+
+Zum Analysieren von Flow-Daten gibt es zwei gängige Verfahren. Zum einen
+Top-N-Analyse und zum anderen die Analyse über Zeitreihen. 
+Näheres über Zeitreihen ist dem Referat von Daniel Kohlsdorf zu entnehmen.
+
+\subsubsection{Top-N-Analyse}
+
+Bei der Top-N-Analyse werden die Flow-Daten anhand fester Regeln, ähnlich
+wie bei Snort, durchgesehen. Dabei hat der Benutzer mehrere Möglichkeiten
+diese Regeln selber zu definieren. Es sind bei weitem nicht so viele
+Regeln wie z.B. in Snort. Die meisten Kriterien für die Regeln sind
+gespeicherte Daten im flow. Ausserdem werden viele Regeln schon von
+Visualisierungsprogrammen zusammengefasst. Somit brauch der Benutzer
+z.B. nur nach den Elementen suchen, wo der meiste Traffic anfällt. 
+
+\subsection{NFDUMP}
+
+Für das Referat habe ich mir ein Programm-Paket angeschaut, dass schon
+die Verarbeitung von Netflow-Daten anbietet. NFDUMP\footnote{%
+\url{http://nfdump.sourceforge.net/}, abgerufen am 14.11.2010} besteht
+aus folgenden einzelnen Programmen.
+
+\begin{itemize}
+  \item nfcapd: nfcapd ist ein Programm um die Netflow-Daten aus dem Netz
+  zu bekommen.
+  \item nfdump: Dient der Analyse der Netflow-Daten.
+  \item nfprofile: Aufteilen der Netflow-Daten anhand von vorher
+  definierten Profilen.
+  \item nfclean.pl: Löscht alte, nicht mehr benötigte Netflow-Daten.
+  \item ft2nfdump: Ein Tool, dass die Daten von dem Programm flow-tools
+  konvertiert.
+\end{itemize}
+
+Ein weiterer Vorteil den die Ansammlung bietet, ist das die Netflow-Daten
+schon über ein Flag direkt anonymisiert werden können. Somit erspart man
+sich ein eigenes Anonymisierungstool.
+
+\subsection{NfSen}
+
+NfSen\footnote{\url{http://nfsen.sourceforge.net/}, abgerufen am 14.11.2010}
+ist die Benutzeroberfläche für das Programm-Paket NFDUMP. Mit diesem
+Frontend-Programm werden die Netflow-Daten grafisch für den Benutzer 
+aufbereitet. Dabei werden verschiedene Möglichkeiten für die Ansicht
+angeboten. 
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{images/nfsen_abb_1}
+  \caption{Allgemeine Ansicht}
+  \label{fig:netflow-security:test-nfsen-1}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{images/nfsen_abb_2}
+  \caption{Genauere Ansicht eines Flows}
+  \label{fig:netflow-security:test-nfsen-2}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{images/nfsen_abb_3}
+  \caption{Noch genauere Ansicht}
+  \label{fig:netflow-security:test-nfsen-3}
+\end{figure}
+
+Ausserdem besteht die Möglichkeit eigene Plugins zu entwickeln und zu
+integrieren. 
+
+\subsection{Verwendung in FIDIUS}
+
+Der Nutzen für das Projekt wäre wohl, dass man sich bei Angriffen
+anschaut, welche vom jeweiligen Sensor erkannt werden. Sei es nun Snort
+oder ein Netflow Kollektor. Meiner Meinung nach sollten wir wohl beide
+Sensoren benutzen, um den Großteil der Angriffe mitbekommen zu können.
+
+\subsection{Weiterführende Links \& Literatur}
+
+\begin{itemize}
+  \item \url{http://www.splintered.net/sw/flow-tools/}
+  \item \url{http://eprints.eemcs.utwente.nl/16911/01/JNSM-Netflow.pdf}
+  \item \url{http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.60.6198&rep=rep1&type=pdf}
+  \item \url{http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.74.6338&rep=rep1&type=pdf}
+\end{itemize}

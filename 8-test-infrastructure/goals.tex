@@ -1,0 +1,46 @@
+\section{Motivation}
+\label{sec:test_goals}
+\authors{\HM, \LM}{\MW \and \JF}
+Das wesentliche Ziel des \f-Systems, die
+Evaluation von \acr{ids}, wird durch Ausführen von \glospl{exploit}
+und Auswerten der \acr{ids}-Events erreicht. Ein wesentlicher
+Bestandteil, der beim \f-System getestet werden muss, ist also das
+Ausführen von \glospl{exploit} auf Hosts und anschließender Kontrolle,
+ob der Host durch den \glos{exploit} erfolgreich übernommen
+wurde. 
+
+Die Tests sollen gewährleisten, das Änderungen am System direkt überprüft
+werden können und so sichergestellt ist, dass das System noch wie erwartete funktioniert.
+Außerdem sollen die Tests dazu verwendet werden, den aktuelle Stand
+in den Repositories regelmäßig automatisch auf ihre korrekte Funktionalität zu
+überprüfen.
+Bevor wir diese Testinfrastruktur aufgebaut hatten, kam es öfter vor,
+dass das System für eine Woche nicht funktionierte, weil durch Änderung
+ein Fehler eingebaut wurde und dieser nicht bemerkt wurde.
+Diese Fehler ließen sich oft erst durch längeres Debuggen finden und es
+ließ sich nicht sofort erkennen, wo die Fehlerquelle liegt.
+
+Zum übernehmen von Hosts während der Tests, werden Angriffsziele benötigt,
+auf denen die \glospl{exploit} ausgeführt werden können. Da das \f-System
+auf den Laptops der Entwickler implementiert wird, müssten die Angriffsziele
+allerdings auf jedem Laptop bereitgestellt werden, um das \f-System
+vollständig testen zu können.
+
+Die Bereitstellung der Angriffsziele wird noch erschwert, da die
+\glospl{exploit} Schwachstellen von unterschiedlichen Services und
+Betriebssystemen ausnutzen und demzufolge das komplette Repertoire an
+Systemkonfigurationen abgedeckt werden muss. Zusätzlich müssen für
+bestimmte Funktionen des \f-Systems die Angriffsziele auch noch nach
+einem bestimmten Schema aufgebaut sein, \zB muss es Angriffsziele
+geben, die erst nach erfolgreicher Übernahme eines bestimmten Hosts
+für den Angreifer sicht- und angreifbar werden.
+
+Wenn jeder Entwickler die verschiedenen Hosts und Betriebssysteme auf dem
+eigenen System während der Tests zur Verfügung haben muss, wäre dies sehr
+aufwändig. Deswegen soll eine zentrale Test-Infrastruktur geschaffen
+werden, welche die benötigten Hosts und Betriebssysteme bereitstellt.
+
+Während der Test-Durchführung muss sichergestellt werden, dass die
+anzugreifenden Hosts auch aktiv sind. Deswegen sollen die Hosts über
+virtuelle Maschinen zur Verfügung gestellt werden und über unser System
+gesteuert werden.

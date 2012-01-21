@@ -1,0 +1,103 @@
+%!TEX TS-program = xelatex
+%!TEX encoding = UTF-8 Unicode
+\documentclass{uhbthesis}
+
+\usepackage{tikz,url,pgfplots}
+\usetikzlibrary{arrows}
+\tikzset{
+  line a/.style={line width=.5pt},
+  line b/.style={line width=1pt},
+  line c/.style={line width=1.5pt}
+}
+
+\usepackage[toc,section,numberedsection=autolabel,nosuper,numberline,acronym,nosuper,notree]{glossaries}
+\setStyleFile{glossary}
+\makeglossaries
+
+\input{glossary.tex}
+\input{acronyms.tex}
+
+\bibliography{bibliography}
+
+\input{settings.tex}
+
+\author{}
+\title{}
+\subtitle{Diplomarbeit}
+
+\begin{document}
+
+\pagestyle{empty}
+% Vakatseiten
+\null\vfill
+\begin{center}
+  \includegraphics[width=.9\linewidth]{images/vakat.pdf}\\[1cm]
+  {\Huge\sffamily Projektbericht\\[.25ex]2. Projektjahr}
+\end{center}
+\vfill
+\hfill{\large\sffamily
+\def\arraystretch{1}
+\begin{tabular}{l}
+  Universität Bremen\\
+  Fachbereich 3
+\end{tabular}}
+
+% Titel
+\cleardoublepage
+\pagestyle{fancy}
+\maketitle
+
+% Impressumsseite
+\clearpage
+\thispagestyle{empty}\small
+\textit{Herausgegeben von}
+
+\textit{Betreut durch}
+
+
+\vfill
+
+\textit{\textcopyright\ FIDIUS, 2011.}
+
+\url{http://www.fidius.me/}
+
+Dieses Dokument unterliegt dem Versionskontrollsystem des Projektes. Als
+Satzprogramm kam \XeTeX\ in Version \the\XeTeXversion\XeTeXrevision\ zum
+Einsatz. Die Brotschrift ist Adobe Minion Pro Regular, als Akzidenzschriften
+werden die Helvetica Neue Thin und Condensed sowie die DejaVu Sans Mono Book
+verwendet.
+
+\normalsize
+\frontmatter
+\shorttoc
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{section}{Inhaltsverzeichnis}
+\tableofcontents
+
+%\clearpage
+%\listoftodos
+
+\cleardoublepage
+\input{preface.tex}
+\mainmatter
+
+\input{1-introduction/index.tex}
+\input{2-motivation/index.tex}
+\input{3-related-work/index.tex}
+\input{4-objectives/index.tex}
+\input{5-methods/index.tex}
+\input{6-execution/index.tex}
+\input{7-conclusion/index.tex}
+\input{8-test-infrastructure/index.tex}
+\input{9-results/index.tex}
+\input{10-outlook/index.tex}
+
+
+\appendix
+\input{A-compositions/appendix.tex}
+\input{A-lists/appendix.tex}
+\input{A-lists/listings.tex}
+
+\end{document}
