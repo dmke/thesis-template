@@ -4,8 +4,8 @@
 \def\englishthesis{english}
 \def\ngermanthesis{ngerman}
 \def\thesislang{}
-\DeclareOption{english}{\gdef\thesislang{\englishthesis}}
-\DeclareOption{ngerman}{\gdef\thesislang{\ngermanthesis}}
+\DeclareOption{english}{\global\let\thesislang\englishthesis}
+\DeclareOption{ngerman}{\global\let\thesislang\ngermanthesis}
 
 % no options given
 \DeclareOption*{\PackageWarning{thesis}{Unknown `\CurrentOption`}}
@@ -21,18 +21,7 @@
 \RequirePackage{xunicode}
 \RequirePackage{xltxtra}
 
-<<<<<<< HEAD
 \RequirePackage[\thesislang]{babel}
-\addto\captionsenglisch{
-\def\contentsname{Table of Content}
-}
-\addto\captionsngerman{
-\def\contentsname{Inhalt}
-}
-=======
-\RequirePackage[english]{babel}
-
->>>>>>> 59926a14aa21c45e8f70d0e890a429605261e1a1
 
 \RequirePackage[german=guillemets]{csquotes}
 \RequirePackage{amsmath}
@@ -452,6 +441,74 @@
   \vspace{1em}%
 }
 
+\def\maybespaceafter#1#2{%
+  \expandafter\def\csname #1\endcsname{#2\xspace}%
+}
+
+\ifx\thesislang\ngermanthesis
+  \input{abbreviations.de.tex}
+\fi
+\ifx\thesislang\englishthesis
+  \input{abbreviations.en.tex}
+\fi
+
+% basically: "\maybespaceafter{foo}{bar}" defines "\foo" which prints "bar"
+
+\newcommand*{\acr}[1]{\gls{acr:#1}}
+\newcommand*{\Acr}[1]{\Gls{acr:#1}}
+\newcommand*{\ACR}[1]{\GLS{acr:#1}}
+\newcommand*{\acrpl}[1]{\glspl{acr:#1}}
+\newcommand*{\Acrpl}[1]{\Glspl{acr:#1}}
+\newcommand*{\ACRpl}[1]{\GLSpl{acr:#1}}
+
+\newcommand*{\glos}[1]{\gls{glos:#1}}
+\newcommand*{\Glos}[1]{\Gls{glos:#1}}
+\newcommand*{\GLOS}[1]{\GLS{glos:#1}}
+\newcommand*{\glospl}[1]{\glspl{glos:#1}}
+\newcommand*{\Glospl}[1]{\Glspl{glos:#1}}
+\newcommand*{\GLOSpl}[1]{\GLSpl{glos:#1}}
+
+%% math tools
+
+\def\N{\ensuremath{\mathbb{N}}}
+\def\Z{\ensuremath{\mathbb{Z}}}
+\def\I{\ensuremath{\mathbb{I}}}
+\def\Q{\ensuremath{\mathbb{Q}}}
+\def\R{\ensuremath{\mathbb{R}}}
+\def\C{\ensuremath{\mathbb{C}}}
+\DeclareMathOperator{\sgn}{\text{sgn}}
+
+% acronyms style
+\newglossarystyle{thesisacr}{%
+  \renewenvironment{theglossary}%
+    {\begin{description}[style=sameline]}
+    {\end{description}}
+  \renewcommand*{\glossaryheader}{}%
+  \renewcommand*{\glsgroupheading}[1]{}%
+  \renewcommand*{\glossaryentryfield}[5]{%
+      \item[\glstarget{##1}{##2}] ##3, S.~##5
+  }%
+  \renewcommand*{\glsgroupskip}{\indexspace}%
+}
+
+% glossary style
+\newglossarystyle{thesis}{%
+  \renewenvironment{theglossary}%
+    {\begin{description}}
+    {\end{description}}
+  \renewcommand*{\glossaryheader}{}%
+  \renewcommand*{\glsgroupheading}[1]{}%
+  \renewcommand*{\glossaryentryfield}[5]{%
+      \item[\glstarget{##1}{##2}] ##3 \\
+      S.~##5
+  }%
+  \renewcommand*{\glsgroupskip}{\indexspace}%
+}
+
+%% some tolerance parameters
+\tolerance=400
+\hfuzz=0.2pt
+
 % headers & footers
 \RequirePackage{fancyhdr}
 \pagestyle{fancy}
@@ -468,7 +525,7 @@
     \node[anchor=west, text width=\textwidth, inner sep=0pt]
       (rightmark text left)
       at ($(current page.north west) + (1in+\oddsidemargin+\hoffset,-3em)$)
-      {\parbox{\textwidth}{\raggedright\small\@titleshort\par\diplomaname}};
+      {\parbox{\textwidth}{\raggedright\small\diplomaname\par\@titleshort}};
     \node[anchor=north east, text width=\textwidth, inner sep=0pt]
       (rightmark text right)
       at (rightmark text left.north east)
@@ -487,7 +544,7 @@
     \node[anchor=west, text width=\textwidth, inner sep=0pt]
       (leftmark text left)
       at ($(current page.north west) + (1in+\evensidemargin+\hoffset,-3em)$)
-      {\parbox{\textwidth}{\raggedleft\small\@titleshort\par\diplomaname}};
+      {\parbox{\textwidth}{\raggedleft\small\diplomaname\par\@titleshort}};
     \node[anchor=north east, text width=\textwidth, inner sep=0pt]
       (leftmark text right)
       at (leftmark text left.north east)
@@ -543,6 +600,7 @@
     \fi
   \fi
 }
+
 
 \renewcommand\maketitle{%
   \thispagestyle{empty}%

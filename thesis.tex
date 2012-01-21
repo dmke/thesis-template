@@ -1,8 +1,6 @@
 %!TEX TS-program = xelatex
 %!TEX encoding = UTF-8 Unicode
-\documentclass{thesis}
-
-\usepackage{lipsum}
+\documentclass[english]{thesis}
 
 \setStyleFile{glossary}
 \makeglossaries
@@ -38,6 +36,9 @@
 \clearpage
 \input{chapters/declarations.tex}
 
+\clearpage
+\input{chapters/acknowledgements.tex}
+
 \frontmatter
 \phantomsection
 \addcontentsline{toc}{section}{\contentsname}
@@ -47,18 +48,9 @@
 %\listoftodos
 
 \cleardoublepage
-
-\input{chapters/acknowledgements.tex}
-
 \mainmatter
 
-\input{chapters/1-introduction/index.tex}
-%\input{chapters/2-motivation/index.tex}
-%\input{chapters/3-related-work/index.tex}
-% ...
-
-\appendix
-\chapter{Appendix}
-\input{appendices/lists.tex}
+\input{chapters/index.tex}
+\input{appendices/index.tex}
 
 \end{document}
