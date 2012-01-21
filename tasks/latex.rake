@@ -40,7 +40,7 @@ end
 
 desc "Printout required packages."
 task :required => "thesis.cls" do
-  f = File.readlines "fidius-x.cls"
+  f = File.readlines "thesis.cls"
   pkgs = []
   f.each do |line|
     /^\\RequirePackage(\[.*\])?\{(.*?)\}/.match(line) do |m|

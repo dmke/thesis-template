@@ -27,28 +27,23 @@
 % Impressumsseite
 \clearpage
 \thispagestyle{empty}\small
-\textit{Herausgegeben von}
+\null\vfill
 
-\textit{Betreut durch}
+\makeatletter
+  \textbf{\@author}\par
+  \@title\par
+  \ifthesis@hassubtitle\@subtitleshort\fi
 
-
-\vfill
-
-\textit{\textcopyright\ FIDIUS, 2011.}
-
-\url{http://www.fidius.me/}
-
-Dieses Dokument unterliegt dem Versionskontrollsystem des Projektes. Als
-Satzprogramm kam \XeTeX\ in Version \the\XeTeXversion\XeTeXrevision\ zum
-Einsatz. Die Brotschrift ist Adobe Minion Pro Regular, als Akzidenzschriften
-werden die Helvetica Neue Thin und Condensed sowie die DejaVu Sans Mono Book
-verwendet.
+  Diplomarbeit, Fachbereich Mathematik und Informatik\par
+  Universität Bremen, \monthyear
+\makeatother
 
 \normalsize
-\frontmatter
-\shorttoc
 
-\cleardoublepage
+\clearpage
+\input{chapters/declarations.tex}
+
+\frontmatter
 \phantomsection
 \addcontentsline{toc}{section}{Inhaltsverzeichnis}
 \tableofcontents
@@ -58,8 +53,7 @@ verwendet.
 
 \cleardoublepage
 
-%\input{chapters/acknowledgements.tex}
-%\input{chapter/preface.tex}
+\input{chapters/acknowledgements.tex}
 
 \mainmatter
 
