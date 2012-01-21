@@ -1,6 +1,9 @@
+
 %!TEX TS-program = xelatex
 %!TEX encoding = UTF-8 Unicode
 \documentclass{thesis}
+
+\usepackage{lipsum}
 
 \setStyleFile{glossary}
 \makeglossaries
@@ -12,15 +15,13 @@
 
 \input{settings.tex}
 
-\author{}
-\title{}
+\author{asdsad}
+\title{asdadasd}
 \subtitle{Diplomarbeit}
 
 \begin{document}
 
 % Titel
-\cleardoublepage
-\pagestyle{fancy}
 \maketitle
 
 % Impressumsseite
@@ -56,13 +57,19 @@ verwendet.
 %\listoftodos
 
 \cleardoublepage
-\input{preface.tex}
+
+%\input{chapters/acknowledgements.tex}
+%\input{chapter/preface.tex}
+
 \mainmatter
 
-
-
+\input{chapters/1-introduction/index.tex}
+%\input{chapters/2-motivation/index.tex}
+%\input{chapters/3-related-work/index.tex}
+% ...
 
 \appendix
-\input{appendices/appendix.tex}
+\chapter{Appendix}
+\input{appendices/lists.tex}
 
 \end{document}

@@ -12,3 +12,6 @@ glossary.ist
 *~
 .\#
 \#*
+*.lof
+*.lot
+*.run.xml

@@ -25,9 +25,9 @@ $KCODE = 'u' if RUBY_VERSION < '1.9'
 
 # defining main files. should be easily detectable by algorithms.
 MAIN_TEX = 'thesis.tex'
-MAIN_PDF = MAIN_TEX.gsub /xtex$/, 'pdf'
-MAIN_AUX = MAIN_TEX.gsub /xtex$/, 'aux'
-MAIN_LOG = MAIN_TEX.gsub /xtex$/, 'log'
+MAIN_PDF = MAIN_TEX.gsub /tex$/, 'pdf'
+MAIN_AUX = MAIN_TEX.gsub /tex$/, 'aux'
+MAIN_LOG = MAIN_TEX.gsub /tex$/, 'log'
 
 # the tex processor =~ /(pdf(la)?|xe(la)?|lua)?tex/
 TEX_ENGINE = 'xelatex'

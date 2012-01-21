@@ -1,5 +1,5 @@
 desc "Run #{TEX_ENGINE} to gain a PDF document (invoked by default target)."
-file MAIN_PDF => FileList[MAIN_TEX, '*.cls', '*.sty', '**/*.xtex', '**/*.tex', '**/*.latex', '**/*.bib', 'images/**/*.*'] do |t|
+file MAIN_PDF => FileList['*.cls', '*.sty', '**/*.xtex', '**/*.tex', '**/*.latex', '**/*.bib', 'images/**/*.*'] do |t|
   run_no = 0
   log = xtex2pdf
   while rerun? log, run_no
@@ -28,7 +28,7 @@ desc "Convert all SVG images and create the PDF document."
 task :default => [:images, :check, MAIN_PDF]
 
 desc "Determines labels and things they belong to."
-task :labels => FileList[MAIN_TEX, '**/*.xtex', '**/*.tex', '**/*.latex'] do |t|
+task :labels => FileList['**/*.tex', '**/*.latex'] do |t|
   t.prerequisites.sort.each do |pr|
     labels = []
     labels_of(pr).each_pair do |label,thing|
@@ -39,7 +39,7 @@ task :labels => FileList[MAIN_TEX, '**/*.xtex', '**/*.tex', '**/*.latex'] do |t|
 end
 
 desc "Printout required packages."
-task :required => "fidius-x.cls" do
+task :required => "thesis.cls" do
   f = File.readlines "fidius-x.cls"
   pkgs = []
   f.each do |line|

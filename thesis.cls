@@ -1,6 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{thesis}[2011/12/20 v1.0 UHB CS Thesis]
 
+
+
 % no options given
 \DeclareOption*{\PackageWarning{thesis}{Unknown `\CurrentOption`}}
 \ProcessOptions\relax
@@ -16,7 +18,12 @@
 \RequirePackage{xltxtra}
 
 \RequirePackage[english,ngerman]{babel}
-\addto\captionsngerman{\def\contentsname{Inhalt}}
+\addto\captionsenglisch{
+\def\contentsname{Table of Content}
+}
+\addto\captionsngerman{
+\def\contentsname{Inhalt}
+}
 
 \RequirePackage[german=guillemets]{csquotes}
 \RequirePackage{amsmath}
@@ -464,7 +471,7 @@
     \node[anchor=west, text width=\textwidth, inner sep=0pt]
       (rightmark text left)
       at ($(current page.north west) + (1in+\oddsidemargin+\hoffset,-3em)$)
-      {\parbox{\textwidth}{\raggedright\small\projectname\par \@titleshort\ifthesis@hassubtitle~--~\@subtitleshort\fi}};
+      {\parbox{\textwidth}{\raggedright\small\@titleshort\ifthesis@hassubtitle~--~\@subtitleshort\fi}};
     \node[anchor=north east, text width=\textwidth, inner sep=0pt]
       (rightmark text right)
       at (rightmark text left.north east)
@@ -483,7 +490,7 @@
     \node[anchor=west, text width=\textwidth, inner sep=0pt]
       (leftmark text left)
       at ($(current page.north west) + (1in+\evensidemargin+\hoffset,-3em)$)
-      {\parbox{\textwidth}{\raggedleft\small\projectname\par \@titleshort\ifthesis@hassubtitle~--~\@subtitleshort\fi}};
+      {\parbox{\textwidth}{\raggedleft\small\@titleshort\ifthesis@hassubtitle~--~\@subtitleshort\fi}};
     \node[anchor=north east, text width=\textwidth, inner sep=0pt]
       (leftmark text right)
       at (leftmark text left.north east)

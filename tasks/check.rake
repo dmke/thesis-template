@@ -1,5 +1,5 @@
 desc "Performs various checks."
-task :check => FileList['**/*.xtex', '**/*.tex', '**/*.latex'] do |t|
+task :check => FileList['**/*.tex', '**/*.latex'] - [MAIN_TEX, 'settings.tex'] do |t|
   check = LaTeX::Check.new 'glossary.tex', 'acronyms.tex'
   fail  = false
   t.prerequisites.each do |pr|

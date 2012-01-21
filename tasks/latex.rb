@@ -21,7 +21,7 @@ CLEAN.include %w{out tdo run.xml}.globit
 # finally pdf and synctex
 CLOBBER.include(MAIN_PDF, MAIN_PDF.gsub(/pdf$/, 'synctex.gz'))
 
-# runs XeTeX on main.xtex and returns the log file
+# runs XeTeX on MAIN_TEX and returns the log file
 def xtex2pdf
   # output is logged to main.log which is parsed afterwards. it may be nice to
   # redirect STDOUT or $stdout into a StringIO, but this seems to be harder

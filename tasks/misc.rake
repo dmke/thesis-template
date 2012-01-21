@@ -1,5 +1,5 @@
 desc "Printout all TODOs, FIXMEs, XXXs."
-task :notes => FileList[MAIN_TEX, '**/*.xtex', '**/*.tex', '**/*.latex'] do |t|
+task :notes => FileList['**/*.tex', '**/*.latex'] - [MAIN_TEX] do |t|
   t.prerequisites.sort.each do |pr|
     todos = []
     curr_authors = nil

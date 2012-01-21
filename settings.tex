@@ -1,17 +1,18 @@
 \makeatletter
 
+
+
 % basically: "\maybespaceafter{foo}{bar}" defines "\foo" which prints "bar"
 \def\maybespaceafter#1#2{%
   \expandafter\def\csname #1\endcsname{#2\xspace}%
 }
 
-%% common macros
-\maybespaceafter{zB}{z.\,B.}
-\maybespaceafter{dh}{d.\,h.}
-\maybespaceafter{uU}{u.\,U.}
-\maybespaceafter{uA}{u.\,A.}
-\maybespaceafter{su}{s.\,u.}
-\maybespaceafter{idR}{i.\,d.\,R.}
+\addto\captionsngerman{
+  \input{abbreviations.de.tex}
+}
+\addto\captionenglisch{
+  \input{abbreviations.en.tex}
+}
 
 \newcommand*{\acr}[1]{\gls{acr:#1}}
 \newcommand*{\Acr}[1]{\Gls{acr:#1}}
@@ -36,15 +37,6 @@
 \def\R{\ensuremath{\mathbb{R}}}
 \def\C{\ensuremath{\mathbb{C}}}
 \DeclareMathOperator{\sgn}{\text{sgn}}
-
-%% misc
-
-\def\monthyear{%
-  \ifcase\month\or Januar\or Februar\or März\or%
-    April\or Mai\or Juni\or Juli\or August\or%
-    September\or Oktober\or November\or%
-    Dezember\fi~\the\year\xspace%
-}
 
 % acronyms style
 \newglossarystyle{thesisacr}{%
