@@ -21,6 +21,7 @@
 %\addto\captionsenglisch{
 %\def\contentsname{Table of Content}
 %}
+
 \addto\captionsngerman{
 \def\contentsname{Inhalt}
 }
