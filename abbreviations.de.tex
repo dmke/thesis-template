@@ -1,26 +1,18 @@
-
 \def\diplomaname{Diplomarbeit}
 \def\examinername{1. Prüfer}
 \def\supervisorname{2. Prüfer}
+\def\contentsname{Inhalt}
 
-\AtBeginDocument{\@ifpackageloaded[ngerman]{babel}
-  \addto\captionsngerman{
-  %% common macros
-    \maybespaceafter{zB}{z.\,B.}%
-    \maybespaceafter{dh}{d.\,h.}%
-    \maybespaceafter{uU}{u.\,U.}%
-    \maybespaceafter{uA}{u.\,A.}%
-    \maybespaceafter{su}{s.\,u.}%
-    \maybespaceafter{idR}{i.\,d.\,R.}%
-}
+\maybespaceafter{zB}{z.\,B.}%
+\maybespaceafter{dh}{d.\,h.}%
+\maybespaceafter{uU}{u.\,U.}%
+\maybespaceafter{uA}{u.\,A.}%
+\maybespaceafter{su}{s.\,u.}%
+\maybespaceafter{idR}{i.\,d.\,R.}%
 
-%% misc
-  \addto\captionsngerman{
-    \def\monthyear{%
-      \ifcase\month\or Januar\or Februar\or März\or%
-        April\or Mai\or Juni\or Juli\or August\or%
-        September\or Oktober\or November\or%
-        Dezember\fi~\the\year\xspace%
-    }%
-  }
+\def\monthyear{%
+  \ifcase\month\or Januar\or Februar\or März\or%
+    April\or Mai\or Juni\or Juli\or August\or%
+    September\or Oktober\or November\or%
+    Dezember\fi~\the\year\xspace%
 }

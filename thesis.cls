@@ -18,13 +18,7 @@
 \RequirePackage{xltxtra}
 
 \RequirePackage[english]{babel}
-%\addto\captionsenglisch{
-%\def\contentsname{Table of Content}
-%}
 
-\addto\captionsngerman{
-\def\contentsname{Inhalt}
-}
 
 \RequirePackage[german=guillemets]{csquotes}
 \RequirePackage{amsmath}
