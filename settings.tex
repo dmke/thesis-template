@@ -1,18 +1,12 @@
 \makeatletter
 
-
-
 % basically: "\maybespaceafter{foo}{bar}" defines "\foo" which prints "bar"
 \def\maybespaceafter#1#2{%
   \expandafter\def\csname #1\endcsname{#2\xspace}%
 }
 
-\addto\captionsngerman{
-  \input{abbreviations.de.tex}
-}
-\addto\captionenglisch{
-  \input{abbreviations.en.tex}
-}
+\input{abbreviations.en.tex}
+%\input{abbreviations.de.tex}
 
 \newcommand*{\acr}[1]{\gls{acr:#1}}
 \newcommand*{\Acr}[1]{\Gls{acr:#1}}

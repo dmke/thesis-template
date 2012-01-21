@@ -7,7 +7,8 @@
 \DeclareOption*{\PackageWarning{thesis}{Unknown `\CurrentOption`}}
 \ProcessOptions\relax
 
-\LoadClass[10pt]{book}
+\Load
+Class[10pt]{book}
 
 % common packages
 \RequirePackage{ifxetex}
@@ -18,9 +19,9 @@
 \RequirePackage{xltxtra}
 
 \RequirePackage[english,ngerman]{babel}
-\addto\captionsenglisch{
-\def\contentsname{Table of Content}
-}
+%\addto\captionsenglisch{
+%\def\contentsname{Table of Content}
+%}
 \addto\captionsngerman{
 \def\contentsname{Inhalt}
 }
