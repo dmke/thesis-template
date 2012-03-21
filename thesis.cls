@@ -75,7 +75,7 @@
 %  ItalicFont={MinionPro-It.otf},
 %  BoldItalicFont={MinionPro-BoldIt.otf},
 %  Numbers=OldStyle,
-%  Mapping=tex-text  
+%  Mapping=tex-text
 %]{MinionPro-Regular.otf}
 %\def\textsuperscript#1{$^{\text{#1}}$}
 
@@ -124,7 +124,7 @@
   \fi
 }
 \def\@subtitle{~}
- 
+
 \def\authoremail#1{\gdef\@authoremail{#1}}
 \def\@authoremail{}
 
@@ -151,14 +151,13 @@
 
 \RequirePackage{geometry}
 \geometry{
-  hcentering,
   a4paper,
 %  paperheight=240mm,
 %  paperwidth=170mm,
-  headheight=30pt,
+  headheight=35pt,
   footskip=40pt,
-  headsep=30pt,
-  marginparwidth=60pt
+  headsep=35pt,
+  marginparwidth=70pt
 }
 
 % reducing ToC, LoF, LoT pagestyle, margins and indention
@@ -274,35 +273,18 @@
 
 % formatting sections
 \RequirePackage{titlesec}
-\titleformat{\chapter}[display]
-  {\sffamily\fontsize{32}{32}\selectfont\color{white}}
-  {\@chapapp\space\thechapter}
-  {50pt}{\fontsize{54}{54}\selectfont}[\newpage]
-\titleformat{\section}[hang]
-  {\huge\sffamily\color{Night Blue}}
-  {\thesection}
-  {1em}{}
-\titlespacing{\section}{0pt}{*9}{*1.5}
-\titleformat{\subsection}[hang]
-  {\LARGE\sffamily\color{Night Blue}}
-  {\thesubsection}
-  {1em}{}
-\titlespacing{\subsection}{0pt}{*7}{*1.5}
-\titleformat{\subsubsection}
-  {\Large\sffamily\color{Night Blue}}
-  {\thesubsubsection}
-  {1em}{}
-\titlespacing{\subsubsection}{0pt}{*6}{*1.5}
-\titleformat{\paragraph}[hang]
-  {\large\sffamily\color{Night Blue}}
-  {\theparagraph}
-  {1em}{}
-\titlespacing{\paragraph}{0pt}{*5}{*1.5}
-\titleformat{\subparagraph}[hang]
-  {\normalsize\sffamily\color{Night Blue}}
-  {\thesubparagraph}
-  {1em}{}
-\titlespacing{\subparagraph}{0pt}{*4}{*1.5}
+\titleformat{\chapter}    [display] {\large\sffamily}          {\@chapapp\space\thechapter} {1ex} {\huge\bfseries\sffamily}
+\titleformat{\section}       [hang] {\Large\bfseries\sffamily} {\thesection}                {1em} {}
+\titleformat{\subsection}    [hang] {\large\bfseries\sffamily} {\thesubsection}             {1em} {}
+\titleformat{\subsubsection} [hang] {\large\sffamily}          {\thesubsubsection}          {1em} {}
+\titleformat{\paragraph}     [hang] {\large\sffamily}          {\theparagraph}              {1em} {}
+\titleformat{\subparagraph}  [hang] {\normalsize\sffamily}     {\thesubparagraph}           {1em} {}
+
+\titlespacing{\section}       {0pt} {*9} {*1.5}
+\titlespacing{\subsection}    {0pt} {*7} {*1.5}
+\titlespacing{\subsubsection} {0pt} {*6} {*1.5}
+\titlespacing{\paragraph}     {0pt} {*5} {*1.5}
+\titlespacing{\subparagraph}  {0pt} {*4} {*1.5}
 
 % more usable tabular environment.
 %  #1    = comma seperated list of column widths (percentage)
@@ -512,76 +494,31 @@
 % headers & footers
 \RequirePackage{fancyhdr}
 \pagestyle{fancy}
-\renewcommand{\chaptermark}[1]{\markboth{#1}{#1}}
-\renewcommand{\sectionmark}[1]{\markboth{#1}{#1}}
+%\renewcommand{\chaptermark}[1]{\markboth{#1}{#1}}
+%\renewcommand{\sectionmark}[1]{\markboth{#1}{#1}}
 
 \fancyhf{}% clear all fields
 \fancyhead[RO]{\thesis@head@oddpage}% ungerade, rechts
 \def\thesis@head@oddpage{%
-  \begin{tikzpicture}[remember picture, overlay, every node/.style={font={\color{Black}}}]%
-    \path[fill=Beige] (current page.north west) rectangle ($(current page.north east) + (-2,-6em)$);
-    \path[fill=Red] ($(current page.north east) + (-2,-6em)$) rectangle ++(2,6em);
-    
-    \node[anchor=west, text width=\textwidth, inner sep=0pt]
-      (rightmark text left)
-      at ($(current page.north west) + (1in+\oddsidemargin+\hoffset,-3em)$)
-      {\parbox{\textwidth}{\raggedright\small\diplomaname\par\@titleshort}};
-    \node[anchor=north east, text width=\textwidth, inner sep=0pt]
-      (rightmark text right)
-      at (rightmark text left.north east)
-      {\parbox{\textwidth}{\raggedleft\small\leftmark}};
-    \if@mainmatter\node[anchor=west, text width=5em, text centered]
-      at ($(current page.north east) + (-2,-3em)$)
-      {\sffamily\fontsize{23}{23}\selectfont\color{white}\thesection};\fi
-  \end{tikzpicture}%
+  \small\slshape%
+  \diplomaname\hfill\@titleshort\par
+  \if@mainmatter\strut\hfill\leftmark\fi%
 }
-\fancyhead[RE]{\thesis@head@evenpage}% gerade, links
+
+\fancyhead[LE]{\thesis@head@evenpage}% gerade, links
 \def\thesis@head@evenpage{%
-  \begin{tikzpicture}[remember picture, overlay, every node/.style={font={\color{Black}}}]%
-    \path[fill=Beige] ($(current page.north west) + (-2,-6em)$) rectangle (current page.north east);
-    \path[fill=Red] (current page.north west) rectangle ++(2,-6em);
-    
-    \node[anchor=west, text width=\textwidth, inner sep=0pt]
-      (leftmark text left)
-      at ($(current page.north west) + (1in+\evensidemargin+\hoffset,-3em)$)
-      {\parbox{\textwidth}{\raggedleft\small\diplomaname\par\@titleshort}};
-    \node[anchor=north east, text width=\textwidth, inner sep=0pt]
-      (leftmark text right)
-      at (leftmark text left.north east)
-      {\parbox{\textwidth}{\raggedright\small\leftmark}};
-    \if@mainmatter\node[anchor=west, text width=5em, text centered]
-      at ($(current page.north west) + (0,-3em)$)
-      {\sffamily\fontsize{23}{23}\selectfont\color{white}\thechapter};\fi
-  \end{tikzpicture}%
+  \small\slshape%
+  \diplomaname\hfill\@titleshort\par
+  \if@mainmatter\rightmark\hfill\strut\fi%
 }
-\fancyfoot[RO]{\thesis@foot@oddpage}
-\def\thesis@foot@oddpage{%
-  \begin{tikzpicture}[remember picture, overlay, every node/.style={font={\color{white}}}]%
-    \path[fill=Dark Beige] (-4ex,0) -- (0,0) -- (0,-5) -- (-4ex,-5) -- cycle;
-    \node[anchor=north, text width=4ex, text centered]
-      at (-2ex,-1ex)
-      {\color{white}\thepage};
-  \end{tikzpicture}%
-}
-\fancyfoot[LE]{\thesis@foot@evenpage}
-\def\thesis@foot@evenpage{%
-  \begin{tikzpicture}[remember picture, overlay, every node/.style={font={\color{white}}}]%
-    \path[fill=Dark Beige] (4ex,0) -- (0,0) -- (0,-5) -- (4ex,-5) -- cycle;
-    \node[anchor=north, text width=4ex, text centered]
-      at (2ex,-1ex)
-      {\color{white}\thepage};
-  \end{tikzpicture}%
-}
-\renewcommand{\headrulewidth}{0pt}
+
+\fancyfoot[RO,LE]{\thesis@foot}
+\def\thesis@foot{\small\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+
 \fancypagestyle{plain}{%
   \fancyhf{}%
-  \fancyhead[RO]{%
-    \begin{tikzpicture}[remember picture, overlay, every node/.style={font={\color{Black}}}]%
-      \path[fill=Dark Beige] (current page.north west) rectangle (current page.south east);%
-    \end{tikzpicture}%
-  }%
-  \fancyfoot[RO]{\thesis@foot@oddpage}
-  \fancyfoot[LE]{\thesis@foot@evenpage}
+  \fancyfoot[RO,LE]{\thesis@foot}
   \renewcommand{\headrulewidth}{0pt}
 }
 
@@ -641,7 +578,7 @@
   \hypersetup{pdftitle=\@title}
   \hypersetup{pdfsubject=\@subtitle}
   \hypersetup{pdfauthor={\@author}}
-  
+
   \rowcolors{1}{Beige!25}{}
 }
 
