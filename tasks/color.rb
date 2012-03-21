@@ -1,7 +1,7 @@
 # null device for shell output redirection. typically `/dev/null`,
 # but in ms windows `NUL`
 require 'rbconfig'
-MSWIN = Config::CONFIG['host_os'] =~ /mswin|mingw/
+MSWIN = RbConfig::CONFIG['host_os'] =~ /mswin|mingw/
 if MSWIN
   NULL_DEVICE = 'NUL'
   begin
