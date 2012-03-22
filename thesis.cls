@@ -128,8 +128,8 @@
 \def\authoremail#1{\gdef\@authoremail{#1}}
 \def\@authoremail{}
 
-\def\matriclationnumber#1{\gdef\@matriclationnumber{#1}}
-\def\@matriclationnumber{}
+\def\matriculationnumber#1{\gdef\@matriculationnumber{#1}}
+\def\@matriculationnumber{}
 
 \def\institute#1{\gdef\@institute{#1}}
 \def\@institute{}
@@ -572,8 +572,9 @@
     \def\arraystretch{1.1}%
     \setlength\tabcolsep{4pt}%
     \def\and{$\qquad$}
-    \@author \\
-    \matriculationname \@matriclationnumber \\[3em]
+    \@author\\
+    \@authoremail\\
+    \matriculationname \@matriculationnumber \\[3em]
     \strut\@date\par%
     \vfill%
     \begin{tabular}{rl}
