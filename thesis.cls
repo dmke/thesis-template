@@ -128,6 +128,9 @@
 \def\authoremail#1{\gdef\@authoremail{#1}}
 \def\@authoremail{}
 
+\def\matriclationnumber#1{\gdef\@matriclationnumber{#1}}
+\def\@matriclationnumber{}
+
 \def\institute#1{\gdef\@institute{#1}}
 \def\@institute{}
 
@@ -139,6 +142,9 @@
 
 \def\supervisor#1{\gdef\@supervisor{#1}}
 \def\@supervisor{}
+
+\def\advisor#1{\gdef\@advisor{#1}}
+\def\@advisor{}
 
 
 % adjust some lengths
@@ -566,12 +572,14 @@
     \def\arraystretch{1.1}%
     \setlength\tabcolsep{4pt}%
     \def\and{$\qquad$}
-    \@author \\[3em]
+    \@author \\
+    \matriculationname \@matriclationnumber \\[3em]
     \strut\@date\par%
     \vfill%
     \begin{tabular}{rl}
       \textbf{\examinername:} & \@examiner \\
-      \textbf{\supervisorname:} & \@supervisor
+      \textbf{\supervisorname:} & \@supervisor \\
+      \textbf{\advisorname:} & \@advisor
     \end{tabular}
   \end{center}
   \def\and{, }
