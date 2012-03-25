@@ -14,13 +14,12 @@ contribute!)*
 ## Setup
 
 1. Klone dieses Repository auf deine Festplatte:
-  
-      git clone git://github.com/dmke/thesis-template.git
 
-  oder lade [diese](https://github.com/dmke/thesis-template/tarball/master)
-  Datei herunter und entpacke sie.
-2. Kopiere alle Dateien in ein eigenes Verzeichnis passe die `settings.tex`
-  deinen Bedürfnissen an.
+        git clone git://github.com/dmke/thesis-template.git
+
+    oder lade [diese](https://github.com/dmke/thesis-template/tarball/master)
+    Datei herunter und entpacke sie.
+2. Kopiere alle Dateien in ein eigenes Verzeichnis passe die `settings.tex` deinen Bedürfnissen an.
 3. Fange an zu schreiben.
 
 ## Inhalte
@@ -58,6 +57,9 @@ und Bilddateien ist), passiert nichts.
 
 ## Tipps und Tricks
 
+Im **[Wiki](https://github.com/dmke/thesis-template/wiki)** finden sich noch
+weitere Hinweise.
+
 ### Rake
 
 Das `rake`-Kommando kennt einige hilfreiche Optionen, z.B. die Überprüfung
@@ -92,7 +94,4 @@ Vorlage** zu sehen. Ich übernehme keine Garantie dafür, dass die äußere
 Form den Anforderungen des Prüfungsamtes genügt.
 
 Die Vorlage selbst darf frei zur Erstellung einer DA im Fachbereich 3 der
-Universität Bremen genutzt werden. In der Standard-Einstellung wird in
-der Titelei ein kleiner Hinweis auf die Herkunft der DA-Vorlage gesetzt.
-Ist dies nicht gewünscht, kann dies in der `settings.tex` deaktiviert
-werden.
+Universität Bremen genutzt werden.
