@@ -34,6 +34,7 @@
 \RequirePackage{array}
 \RequirePackage{verbatim}
 \RequirePackage{multicol}
+\RequirePackage{setspace}
 \RequirePackage[nofancy]{svninfo}
 
 \RequirePackage{xspace}
@@ -126,25 +127,25 @@
 \def\@subtitle{~}
 
 \def\authoremail#1{\gdef\@authoremail{#1}}
-\def\@authoremail{}
+\def\@authoremail{~}
 
 \def\matriculationnumber#1{\gdef\@matriculationnumber{#1}}
-\def\@matriculationnumber{}
+\def\@matriculationnumber{~}
 
 \def\institute#1{\gdef\@institute{#1}}
-\def\@institute{}
+\def\@institute{~}
 
 \def\department#1{\gdef\@department{#1}}
-\def\@department{}
+\def\@department{~}
 
 \def\examiner#1{\gdef\@examiner{#1}}
-\def\@examiner{}
+\def\@examiner{~}
 
 \def\supervisor#1{\gdef\@supervisor{#1}}
-\def\@supervisor{}
+\def\@supervisor{~}
 
 \def\advisor#1{\gdef\@advisor{#1}}
-\def\@advisor{}
+\def\@advisor{~}
 
 
 % adjust some lengths
@@ -236,7 +237,7 @@
 \RequirePackage[flushmargin,hang,bottom]{footmisc}
 
 % BibLaTeX: A modern BibTeX approach.
-\RequirePackage[citestyle=alphabetic-verb,bibstyle=alphabetic,maxnames=100]{biblatex}
+\RequirePackage[citestyle=alphabetic-verb,bibstyle=alphabetic,maxnames=100,backend=biber]{biblatex}
 \defbibheading{bibliography}[\bibname]{%
   \section{#1}\label{sec:bibliography}%
 }

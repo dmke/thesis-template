@@ -1,23 +1,31 @@
-glossary.ist
+# tex auxillary files
 *.log
-*-blx.bib
-*.acn
 *.aux
-*.glo
 *.log
-*.out
-*.pdf
 *.synctex.gz
+*.out
 *.toc
+*.lof
+*.lot
+*.pdf
+
+# bibliography related
+*-blx.bib
+*.run.xml
+*.bbl
+*.blg
+*.bcf
+
+# glossary related
+glossary.ist
+*.glo
+*.acn
+*.acr
+*.alg
+*.glg
+*.gls
+
+# backup files
 *~
 .\#
 \#*
-*.lof
-*.lot
-*.run.xml
-*.acr
-*.alg
-*.bbl
-*.blg
-*.glg
-*.gls

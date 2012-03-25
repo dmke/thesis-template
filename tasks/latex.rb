@@ -57,9 +57,9 @@ end
 
 # runs BibTeX on MAIN_AUX to create a bibliography
 def bibtex
-  print bold("Running bibtex: ")
+  print bold("Running bibtex (biber): ")
   begin
-    puts green('OK.') if sh "bibtex #{MAIN_AUX} >#{NULL_DEVICE}"
+    puts green('OK.') if sh "biber #{MAIN_AUX.gsub /\.aux$/, '' } >#{NULL_DEVICE}"
   rescue
     puts red("Error (see #{MAIN_AUX.gsub /aux$/, 'blg' }).")
     raise
@@ -208,7 +208,7 @@ end
 
 # determine if the TeX compiler must be rerunned. three runs should be normal
 # if none auxillary files are present. depending on self referencing bibtex or
-# glossary entries, two more runs may be necessary. a collateral sixth run 
+# glossary entries, two more runs may be necessary. a collateral sixth run
 # may resolves any other weird structures. finally, in a seventh run will fail.
 def rerun? log, run_no
   raise "Something went wrong. Please check your references." if run_no > 6
