@@ -36,7 +36,7 @@ template for theses)
   * The path to all images is (in **all** included files) relative to
     `thesis.tex`. Therefore, even in `chapter/c42/foo.tex` the image 
     `images/foo.png` is included with `\includegraphics[...]{images/foo.png}`.
-* **BibTeX** is used in this template. This is a BibTeX implementation *in
+* **BibTeX** is used in this template. This is a BibLaTeX implementation *in
   LaTeX*, therefore the output formating can be precisely adjusted and in the
   input file `bib` further fields can be used. For clarification see the BibLaTeX documentation.
 
