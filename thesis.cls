@@ -207,10 +207,6 @@
   \makeatother
 \egroup}
 
-
-\RequirePackage[toc,section,numberedsection=autolabel,nosuper,numberline,acronym,nosuper,notree]{glossaries}
-
-
 % redefining ToC, LoF, LoT appearance
 \renewcommand\cfttoctitlefont{\huge\sffamily\color{Night Blue}}
 \renewcommand\cftloftitlefont{\huge\sffamily\color{Night Blue}}
@@ -260,6 +256,8 @@
   pdfencoding=auto
 }
 \def\UrlFont{\itshape}
+
+\RequirePackage[toc,section,numberedsection=autolabel,nosuper,numberline,acronym,nosuper,notree]{glossaries}
 
 % renew figure and table captions to include chapter number
 \RequirePackage[
