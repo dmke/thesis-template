@@ -47,10 +47,10 @@ contribute!)*
 
 In der Konsole startet ein `rake` den Kompilierprozess.
 
-Ein manuelles, ggf. mehrfaches `xelatex thesis.tex`, bzw. `bibtex thesis.aux`
+Ein manuelles, ggf. mehrfaches `xelatex thesis.tex`, bzw. `biber thesis.aux`
 ist nicht notwendig, da genau dafür der `rake`-Befehl existiert. Anhand der
 Log-Ausgaben entscheidet der Befehl, ob und ggf. welche Programme gestartet
-werden müssen (eben `bibtex` nach Änderungen an den Literaturverweisen, oder
+werden müssen (eben `biber` nach Änderungen an den Literaturverweisen, oder
 `xelatex` um ggf. Seitenzahlen und Querverweise herzustellen). Wenn nichts
 zu tun ist (genau dann, wenn die erzeugte `thesis.pdf` neuer als alle `tex`-
 und Bilddateien ist), passiert nichts.

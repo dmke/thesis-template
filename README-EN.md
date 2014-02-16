@@ -44,10 +44,10 @@ template for theses)
 
 The `rake` command in the console starts the compile process.
 
-Manual execution of the `xelatex thesis.tex` or the `bibtex thesis.aux`
+Manual execution of the `xelatex thesis.tex` or the `biber thesis.aux`
 commands are not required, since the `rake` command takes care of those tasks.
-Depending on the log outputs, the command decides if and which programs have to be launched. For example, after a change in the bibliography woudl cause
-`bibtex` to be launched and `xelatex` would be used to update the page numbers and cross-references. If there is nothing to do (only when the created
+Depending on the log outputs, the command decides if and which programs have to be launched. For example, after a change in the bibliography would cause
+`biber` to be launched and `xelatex` would be used to update the page numbers and cross-references. If there is nothing to do (only when the created
 `thesis.pdf` is newer than all `tex` and image files), nothing is done.
 
 ## Tips and Tricks
