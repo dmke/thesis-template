@@ -573,7 +573,7 @@
     \def\and{$\qquad$}
     \@author\\
     \@authoremail\\
-    \matriculationname \@matriculationnumber \\[3em]
+    \matriculationname~\@matriculationnumber \\[3em]
     \strut\@date\par%
     \vfill%
     \begin{tabular}{rl}
