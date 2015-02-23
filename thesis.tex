@@ -2,6 +2,7 @@
 %!TEX encoding = UTF-8 Unicode
 \documentclass[english]{thesis}
 
+\usepackage[boxruled, linesnumbered]{algorithm2e}
 \usepackage{blindtext}
 
 \setStyleFile{glossary}
@@ -54,6 +55,23 @@
 
 \cleardoublepage
 \mainmatter
+
+\begin{algorithm}[H]
+    \SetAlgoLined
+    \KwData{this text}
+    \KwResult{how to write algorithm with \LaTeX2e }
+    initialization\;
+    \While{not at end of this document}{
+        read current\;
+        \eIf{understand}{
+            go to next section\;
+            current section becomes this one\;
+        }{
+            go back to the beginning of current section\;
+        }
+    }
+\caption{How to write algorithms}
+\end{algorithm}
 
 \input{chapters/index.tex}
 \input{appendices/index.tex}
