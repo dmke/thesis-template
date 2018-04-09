@@ -45,10 +45,13 @@ def xtex2pdf
 end
 
 # runs Inkscape on given SVG file and converts it to PDF
-def svg2pdf file
+def svg2pdf(svg_file)
   print bold("Converting #{file}... ")
   begin
-    puts green('OK.') if sh "inkscape -f #{file} -A #{file.gsub /svg$/, "pdf"} >#{NULL_DEVICE}"
+    svg_file = File.join(Dir.pwd, svg_file) unless svg_file[0] == "/"
+    pdf_file = svg_file.gsub /svg$/, "pdf"
+
+    puts green('OK.') if sh "inkscape -f #{Shellwords.shellescape svg_file} -A #{Shellwords.shellescape pdf_file} >#{NULL_DEVICE}"
   rescue
     puts red('Error (details below).')
     raise
