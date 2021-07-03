@@ -1,0 +1,16 @@
+stages:
+  - build
+
+build:texlive:
+  stage: build
+  tags:
+    - docker
+  image: texlive/texlive
+  script:
+    - xelatex thesis
+    - '[ -f "thesis.aux" ] && biber thesis'
+    - xelatex thesis
+    - xelatex thesis
+  artifacts:
+    paths:
+      - thesis.pdf
